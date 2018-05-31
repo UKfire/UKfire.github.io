@@ -1,0 +1,266 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>Mac编译OpenJDK7 | leixi&#39;s Blog</title>
+  <meta name="author" content="kefan.wkf">
+  
+  <meta name="description" content="编译出一个自己的jdk是源码调试的第一步">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Mac编译OpenJDK7"/>
+  <meta property="og:site_name" content="leixi&#39;s Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-70812759-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cb5448498d7169c668b07c2b255d62c1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">leixi&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class=""></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> Mac编译OpenJDK7</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> 编译出一个自己的jdk是源码调试的第一步
+		 </div> <!-- alert -->
+	  		
+
+	  <h4 id="一、准备工作"><a href="#一、准备工作" class="headerlink" title="一、准备工作"></a>一、准备工作</h4><p>1.电脑系统：MacOSX El Capitan（10.11.4）<br>2.OpenJDK7源码：<a href="http://www.java.net/download/openjdk/jdk7u40/promoted/b43/openjdk-7u40-fcs-src-b43-26_aug_2013.zip" target="_blank" rel="noopener">openjdk-7u40-fcs-src-b43-26_aug_2013.zip</a><br>3.BootStrap JDK：java version “1.6.0_65”<br>4.Ant：Apache Ant(TM) version 1.9.7 compiled on April 9 2016<br>5.XCode：大于4.1版本即可，App Store中安装最新的就行了<br>6.Command Line Tools：安装方法    xcode-select –install</p>
+<hr>
+<h4 id="二、编写脚本"><a href="#二、编写脚本" class="headerlink" title="二、编写脚本"></a>二、编写脚本</h4><p>解压OpenJdk7，在其中建立一个脚本文件:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设定语言选项，必须设置</span></span><br><span class="line"><span class="built_in">export</span> LANG=C</span><br><span class="line"><span class="comment"># 指定bootstrap jdk的路径。反引号的意思是执行这段shell代码后得到的结果作为该环境变量的值</span></span><br><span class="line"><span class="built_in">export</span> ALT_BOOTDIR=`/usr/libexec/java_home -v 1.6`</span><br><span class="line"><span class="comment"># Mac平台，C编译器不再是GCC，是clang</span></span><br><span class="line"><span class="built_in">export</span> CC=clang</span><br><span class="line"><span class="comment"># 跳过clang的一些严格的语法检查，不然会将N多的警告作为Error</span></span><br><span class="line"><span class="built_in">export</span> COMPILER_WARNINGS_FATAL=<span class="literal">false</span></span><br><span class="line"><span class="comment"># 链接时使用的参数</span></span><br><span class="line"><span class="built_in">export</span> LFLAGS=<span class="string">'-Xlinker -lstdc++'</span></span><br><span class="line"><span class="comment"># 是否使用clang</span></span><br><span class="line"><span class="built_in">export</span> USE_CLANG=<span class="literal">true</span></span><br><span class="line"><span class="comment"># 使用64位数据模型</span></span><br><span class="line"><span class="built_in">export</span> LP64=1</span><br><span class="line"><span class="comment"># 告诉编译平台是64位，不然会按32位来编译</span></span><br><span class="line"><span class="built_in">export</span> ARCH_DATA_MODEL=64</span><br><span class="line"><span class="comment"># 允许自动下载依赖</span></span><br><span class="line"><span class="built_in">export</span> ALLOW_DOWNLOADS=<span class="literal">true</span></span><br><span class="line"><span class="comment"># 并行编译的线程数，编译时间长，为了不影响其他工作，我选择为2</span></span><br><span class="line"><span class="built_in">export</span> HOTSPOT_BUILD_JOBS=4</span><br><span class="line"><span class="comment"># 是否跳过与先前版本的比较</span></span><br><span class="line"><span class="built_in">export</span> SKIP_COMPARE_IMAGES=<span class="literal">true</span></span><br><span class="line"><span class="comment"># 是否使用预编译头文件，加快编译速度</span></span><br><span class="line"><span class="built_in">export</span> USE_PRECOMPILED_HEADER=<span class="literal">true</span></span><br><span class="line"><span class="comment"># 是否使用增量编译</span></span><br><span class="line"><span class="built_in">export</span> INCREMENTAL_BUILD=<span class="literal">true</span></span><br><span class="line"><span class="comment"># 编译内容</span></span><br><span class="line"><span class="built_in">export</span> BUILD_LANGTOOLS=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> BUILD_JAXP=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> BUILD_JAXWS=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> BUILD_CORBA=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> BUILD_HOTSPOT=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> BUILD_JDK=<span class="literal">true</span></span><br><span class="line"><span class="comment"># 编译版本</span></span><br><span class="line"><span class="built_in">export</span> SKIP_DEBUG_BUILD=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> SKIP_FASTDEBUG_BUILD=<span class="literal">false</span></span><br><span class="line"><span class="built_in">export</span> DEBUG_NAME=debug</span><br><span class="line"><span class="comment"># 避开javaws和浏览器Java插件之类的部分的build</span></span><br><span class="line"><span class="built_in">export</span> BUILD_DEPLOY=<span class="literal">false</span></span><br><span class="line"><span class="built_in">export</span> BUILD_INSTALL=<span class="literal">false</span></span><br><span class="line"><span class="comment"># FreeType</span></span><br><span class="line"><span class="built_in">export</span> FREETYPE_LIB_PATH=/usr/X11R6/lib</span><br><span class="line"><span class="built_in">export</span> FREETYPE_HEADERS_PATH=/usr/X11R6/include</span><br><span class="line"><span class="built_in">export</span> ALT_FREETYPE_LIB_PATH=/usr/<span class="built_in">local</span>/Cellar/freetype/2.6.3/lib</span><br><span class="line"><span class="built_in">export</span> ALT_FREETYPE_HEADERS_PATH=/usr/<span class="built_in">local</span>/Cellar/freetype/2.6.3/include</span><br><span class="line"><span class="comment"># 链接CUPS</span></span><br><span class="line"><span class="built_in">export</span> ALT_CUPS_HEADERS_PATH=/Users/UKfire/openjdk/cups-2.2.1</span><br><span class="line"><span class="comment"># 编译结果的输出路径</span></span><br><span class="line"><span class="built_in">export</span> ALT_OUTPUTDIR=/Users/UKfire/openjdk/build</span><br><span class="line"><span class="comment"># ANT</span></span><br><span class="line"><span class="built_in">export</span> ANT_HOME=/usr/<span class="built_in">local</span>/ant</span><br><span class="line"></span><br><span class="line"><span class="built_in">unset</span> JAVA_HOME</span><br><span class="line"><span class="built_in">unset</span> CLASSPATH</span><br><span class="line"><span class="built_in">unset</span> LD_LIBRARY_PATH</span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> _JAVA_OPTIONS=-Dfile.encoding=ASCII</span><br><span class="line"></span><br><span class="line">make debug_build 2&gt;&amp;1 | tee <span class="variable">$ALT_OUTPUTDIR</span>/build.log</span><br></pre></td></tr></table></figure></p>
+<p>写完保存之后运行改脚本即可进行编译</p>
+<hr>
+<h4 id="三、编译过程中的一些坑"><a href="#三、编译过程中的一些坑" class="headerlink" title="三、编译过程中的一些坑"></a>三、编译过程中的一些坑</h4><h6 id="1-ERROR-The-Compiler-version-is-undefined"><a href="#1-ERROR-The-Compiler-version-is-undefined" class="headerlink" title="1.ERROR: The Compiler version is undefined."></a>1.ERROR: The Compiler version is undefined.</h6><p>解决方法：加上这两个软链接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s /usr/bin/llvm-g++ /Applications/Xcode.app/Contents/Developer/usr/bin/llvm-g++</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s /usr/bin/llvm-gcc /Applications/Xcode.app/Contents/Developer/usr/bin/llvm-gcc</span><br></pre></td></tr></table></figure>
+<h6 id="2-碰到关于-usr-bin-ant的问题"><a href="#2-碰到关于-usr-bin-ant的问题" class="headerlink" title="2.碰到关于/usr/bin/ant的问题"></a>2.碰到关于/usr/bin/ant的问题</h6><p>&emsp;这时需要把/usr/local/ant/bin/ant这个文件夹拷贝到/usr/bin/目录下，如果Mac系统版本是El Capitan，那么不能直接拷贝文件到/usr/bin/目录下，sudo权限也不行，因为加了Rootless机制。具体做法是重启按住Command＋R，进入恢复模式，打开终端，输入 csrutil disable，重启即可。</p>
+<h6 id="3-其他一些问题可以参考："><a href="#3-其他一些问题可以参考：" class="headerlink" title="3.其他一些问题可以参考："></a>3.其他一些问题可以参考：</h6><p><a href="http://zhongmingmao.me/2016/07/13/openjdk.html" target="_blank" rel="noopener">Mac编译OpenJDK7(8)和Eclipse调试Hotspot</a><br>&emsp;这篇文章把一些编译错误的处理方法写得很细致了，我遇到的一些问题也是参考这篇文章解决的，感谢。</p>
+<h6 id="4-最后说一些"><a href="#4-最后说一些" class="headerlink" title="4.最后说一些"></a>4.最后说一些</h6><p>&emsp;编译的过程其实挺坑的，如果碰到什么权限的问题，或者你改了BootStrap JDK，那就重新下载源码包进行编译，因为编译错误的时候可能会生成一些文件导致奇怪的问题产生。</p>
+<hr>
+<h4 id="四、编译成功"><a href="#四、编译成功" class="headerlink" title="四、编译成功"></a>四、编译成功</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#-- Build times ----------</span><br><span class="line">Target debug_build</span><br><span class="line">Start 2016-11-15 12:40:04</span><br><span class="line">End   2016-11-15 12:50:07</span><br><span class="line">00:00:07 corba</span><br><span class="line">00:00:11 hotspot</span><br><span class="line">00:00:02 jaxp</span><br><span class="line">00:00:03 jaxws</span><br><span class="line">00:09:36 jdk</span><br><span class="line">00:00:02 langtools</span><br><span class="line">00:10:03 TOTAL</span><br><span class="line">-------------------------</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">make[5]: `/Users/UKfire/openjdk/hotspot/build/bsd/bsd_amd64_compiler2/jvmg/../generated/sa-jdi.jar&apos; is up to date.</span><br><span class="line">echo &quot;dtrace headers generated&quot;</span><br><span class="line">dtrace headers generated</span><br><span class="line">make[4]: `precompiled.hpp.gch&apos; is up to date.</span><br><span class="line">echo &quot;Doing vm.make build:&quot;</span><br><span class="line">Doing vm.make build:</span><br><span class="line">All done.</span><br><span class="line">cd bsd_amd64_compiler2/jvmg &amp;&amp; ./test_gamma</span><br><span class="line">JAVA_HOME must point to a 64-bit OpenJDK.</span><br><span class="line"></span><br><span class="line">20:08:20 Build Finished (took 10s.562ms)</span><br></pre></td></tr></table></figure>
+	  
+	</div>
+
+	<div>
+  	<center>
+	<div class="pagination">
+
+    
+    
+    <a href="/2017/07/10/GCROOTS和垃圾收集算法/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a type="button" class="btn btn-default disabled">Next<i class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="col-md-3" id="post_meta"> 
+    <span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2017-06-24 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/jvm/">jvm<span>5</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  &copy; 2018 kefan.wkf
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a>,<a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>,<a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a> and <a href="http://getbootstrap.com/" target="_blank">BOOTSTRA.386</a>. 
+     <br> Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind.386</a>.   Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>

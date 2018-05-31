@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>关于数据报表时效性问题的思考 | leixi&#39;s Blog</title>
+  <meta name="author" content="kefan.wkf">
+  
+  <meta name="description" content="最近工作上的一些体会，一家之言">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="关于数据报表时效性问题的思考"/>
+  <meta property="og:site_name" content="leixi&#39;s Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-70812759-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cb5448498d7169c668b07c2b255d62c1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">leixi&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class=""></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> 关于数据报表时效性问题的思考</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> 最近工作上的一些体会，一家之言
+		 </div> <!-- alert -->
+	  		
+
+	  <p>考虑一个数据报表需求，需要在业务端给客户呈现一个数据报表，里面有诸如点击、咨询等不同维度的平铺数据或者漏斗数据，系统无外乎要有以下几个模块：</p>
+<p>1、数据收集模块</p>
+<p>2、消息队列削峰</p>
+<p>3、数据处理模块</p>
+<p>4、数据报表库（可能是OLAP，也可能是OLTP）</p>
+<p>5、数据报告模块</p>
+<p>数据收集模块，就是收集用户的行为日志，将其落入磁盘，这里尽量保证高性能，不会丢失用户的数据记录。</p>
+<p>消息队列，起到了削平峰值的作用，可能数据处理的速度比不上数据收集的速度，那么就会丢失数据，如果有消息队列在中间将峰值削平，就可以保证数据不丢，使数据处理模块按平缓的速度进行处理。</p>
+<p>数据处理模块要从消息队列中取数据清洗入库，这里尽可能让清洗逻辑简单快速，数据库入库尽量能batch insert，保证合适的吞吐量。</p>
+<p>数据报告模块，就是从各分时库中join数据进行展示的模块。</p>
+<p>这么看没什么问题，但是往往现实是残酷的，比如这个系统可能是分成多个子系统的，子系统的数据库又是独立的，甚至子系统的负责团队都是不同的，那么其中一个子系统提供的接口不可能面面俱到包含数据报告希望涵盖的字段（一个是很难做到，另一个是处理数据报告外其他地方根本用不到这个字段）。</p>
+<p>但是数据报告又是以用户为维度的，所以客户的id是一个必填非空列，但是客户数据是存在子系统A中，在对接前端的另一个子系统B里只有用户id（注意用户id和客户id不是一个id），这个时候矛盾就来了，B子系统根本不关心客户id是多少，因为这跟前端展示没有任何关系，吵架由此发生。</p>
+<p>B：我这边根本没存这个客户id，如果每次都要通过接口去获取你这个客户id，那么就会多一词接口调用的网络成本，而且在列表接口，如果每一个item都去请求一次该item层层推倒上去的客户id，就不是一个接口的性能问题了。</p>
+<p>A：报表不仅仅是我们的需求，不是说我们想做报表，而是产品是每个团队共同的，我们要为整个产品去考虑，id我们可以给你提供接口获取，但是这个是必传字段。</p>
+<p>B：这无非就是一个性能的问题嘛，就是看我们这边性能损失和你们那边性能损失谁更大嘛，我们是展示给用户的产品，一点微小的延迟可能造成极不好的体验，你们那边可以在出报表的时候直接join通过关联关系取到客户id，报表慢一点我觉得可以接受。</p>
+<p>A：这不是一个慢的问题，而是数据记录的是当时的状态，我事后去查反应的是现在的状态，这个无法进行对接，如果中间某条数据的变更我是无法得知的。</p>
+<p>B：……</p>
+<p>A：……</p>
+<p>为了保证数据的时效性，是不能在后续的清洗操作或者出报表操作的时候再去join，因为此时的数据已经不是当时的分片，就算中间时间再短，也无法保证当时的数据完整性了。</p>
+<p>解决方案有这么几种：</p>
+<p>1、逐一获取每条追溯的id，效率低</p>
+<p>2、将列表页的数据延迟到详情页再发送，这样就可以在详情中做一些操作</p>
+<p>3、将B系统的数据库做冗余，冗余需要的列</p>
+<p>4、将A，B数据库都通过数据流导入一个高可用数据数据库集群，所有列表的读操作都通过这个数据库来join，直接获得信息，无需接口传递网络开销</p>
+<p>杂七杂八写了一堆，无非就是工作上的一些心得体会，给踩了的坑做个记录，还有今天看到极客时间出了一个关于游戏开发的专栏，非常感兴趣，毕竟我最崇拜的云风就是搞游戏的，哈哈。</p>
+	  
+	</div>
+
+	<div>
+  	<center>
+	<div class="pagination">
+
+    
+    
+    <a href="/2018/05/24/我理解的PPP-TEMPLATE模式/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2018/05/20/我理解的PPP-ACTIVE OBJECT模式/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="col-md-3" id="post_meta"> 
+    <span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2018-05-22 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/瞎搞/">瞎搞<span>2</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  &copy; 2018 kefan.wkf
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a>,<a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>,<a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a> and <a href="http://getbootstrap.com/" target="_blank">BOOTSTRA.386</a>. 
+     <br> Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind.386</a>.   Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>

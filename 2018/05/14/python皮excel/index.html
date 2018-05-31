@@ -1,0 +1,262 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>python皮excel | leixi&#39;s Blog</title>
+  <meta name="author" content="kefan.wkf">
+  
+  <meta name="description" content="最近和运营接触得比较多，对运营玩转excel的技术不由的心生佩服，一拖一拽，就把各种类型的数据拎出来了，再点两下，就绘制成图表了，而且速度之快不亚于当时acm集训队那种噼里啪啦的敲键盘速度，真的是行行出状元啊，excel玩得6也能走向人生巅峰。
+因为要给运营整合数据，所以用python疯狂操作了一发">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python皮excel"/>
+  <meta property="og:site_name" content="leixi&#39;s Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-70812759-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cb5448498d7169c668b07c2b255d62c1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">leixi&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class=""></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> python皮excel</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>最近和运营接触得比较多，对运营玩转excel的技术不由的心生佩服，一拖一拽，就把各种类型的数据拎出来了，再点两下，就绘制成图表了，而且速度之快不亚于当时acm集训队那种噼里啪啦的敲键盘速度，真的是行行出状元啊，excel玩得6也能走向人生巅峰。</p>
+<p>因为要给运营整合数据，所以用python疯狂操作了一发excel，什么合并单元格、飘红、加粗都不在话下，这里记录一下：</p>
+<p>Python操作excel用到了两个包，<strong>xlrd</strong>和<strong>xlwt</strong>，xlrd是用于读取excel，xlwt是用于写入excel。</p>
+<h4 id="读excel"><a href="#读excel" class="headerlink" title="读excel"></a>读excel</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 打开data.xls</span><br><span class="line">wb = xlrd.open_workbook(<span class="string">r'../data.xls'</span>)</span><br><span class="line">// 使用第一个工作薄</span><br><span class="line">sheet = wb.sheet_by_index(<span class="number">0</span>)</span><br><span class="line">// 读取第一列的元素，返回一个list</span><br><span class="line">cols0 = sheet.col_values(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>读excel的就用到这么多，因为只需要读取原文件的某几列先预处理一下就行了。</p>
+<h4 id="写excel"><a href="#写excel" class="headerlink" title="写excel"></a>写excel</h4><p>写excel有两个api，一个是单个单元格写入的write，另一个是写入并合并单元格的write_merge。</p>
+<p>先介绍下write(r,c,data,style)，r是要写入的行号，c是要写入的列号，都从0开始，data是这个单元格要写入的数据，style是单元格样式，后面介绍；</p>
+<p>写入合并单元格的参数比write要多两个，write_merge(r,r1,c,c1,data,style)，r是起始行号，r1是终点行号，c是起始列号，c1是终止列号，data、style和write一样。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">// 打开一个Workbook，编码utf<span class="number">-8</span></span><br><span class="line">wb = xlwt.Workbook(encoding=<span class="string">'utf-8'</span>)</span><br><span class="line">// 给这个文件新加一个工作薄</span><br><span class="line">sheet = wb.add_sheet(<span class="string">"工作薄1"</span>,cell_overwrite_ok=<span class="keyword">True</span>)</span><br><span class="line">// 给单元格设置style，后面介绍</span><br><span class="line">style = set_style(<span class="string">'SimSun'</span>,<span class="number">220</span>)</span><br><span class="line"></span><br><span class="line">row = [<span class="string">u'姓名'</span>,<span class="string">u'年龄'</span>,<span class="string">u'爱好'</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(row)):</span><br><span class="line">	// 给表格第一、二行（合并单元格）前三列分别写入姓名,年龄,籍贯</span><br><span class="line">	sheet.write_merge(<span class="number">0</span>,<span class="number">1</span>,i,i,row[i],style)</span><br><span class="line"></span><br><span class="line">data = [<span class="string">u'雷犀'</span>,<span class="number">18</span>,<span class="string">u'跳水'</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(data)):</span><br><span class="line">	// 给表格第三行前三列分别写入雷犀,<span class="number">18</span>,跳水</span><br><span class="line">	sheet.write(<span class="number">2</span>,i,data[i],style)</span><br><span class="line"></span><br><span class="line">// 保存数据</span><br><span class="line">wb.save(<span class="string">'../pi.xls'</span>)</span><br></pre></td></tr></table></figure>
+<p>其中无论是write还是write_merge都需要一个style参数，这个代表了单元格的样式，看下面的set_style函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">def <span class="title">set_style</span><span class="params">(name,height,bgyellow=False,color=<span class="number">0</span>,bold=False)</span>:</span></span><br><span class="line"><span class="function">	style </span>= xlwt.XFStyle()</span><br><span class="line"></span><br><span class="line">	font = xlwt.Font()</span><br><span class="line">	<span class="comment">// 设置字体</span></span><br><span class="line">	font.name = name</span><br><span class="line">	<span class="comment">// 是否加粗</span></span><br><span class="line">	font.bold = bold</span><br><span class="line">	<span class="comment">// 字体颜色，0代表黑色，2代表红色</span></span><br><span class="line">	font.colour_index = color</span><br><span class="line">	<span class="comment">// 设置字体高度</span></span><br><span class="line">	font.height = height</span><br><span class="line">	style.font = font</span><br><span class="line"></span><br><span class="line">	alignment = xlwt.Alignment()</span><br><span class="line">	<span class="comment">// 水平居中</span></span><br><span class="line">	alignment.horz = xlwt.Alignment.HORZ_CENTER</span><br><span class="line">	<span class="comment">// 垂直居中</span></span><br><span class="line">	alignment.vert = xlwt.Alignment.VERT_CENTER</span><br><span class="line">	style.alignment = alignment</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> bgyellow:</span><br><span class="line">		ptn = xlwt.Pattern()</span><br><span class="line">		<span class="comment">// 背景颜色是实体</span></span><br><span class="line">		ptn.pattern = xlwt.Pattern.SOLID_PATTERN</span><br><span class="line">		<span class="comment">// 背景颜色是黄色</span></span><br><span class="line">		ptn.pattern_fore_colour = <span class="number">0x0D</span></span><br><span class="line">		<span class="comment">// 这个pattern属性不设置，默认白色背景</span></span><br><span class="line">		style.pattern = ptn</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> style</span><br></pre></td></tr></table></figure>
+<p>在查找资料的过程中发现这样一行一行手撸excel虽说可以做到比较精细调整样式，但代码比较恶心，听说用pandas包中的DataFrame数据结构可以很轻松的一键转成csv，后面有机会要学一下，睡了，不皮了。</p>
+	  
+	</div>
+
+	<div>
+  	<center>
+	<div class="pagination">
+
+    
+    
+    <a href="/2018/05/15/iPad看代码靠谱吗/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2018/05/10/谈一谈Java中的几种引用/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="col-md-3" id="post_meta"> 
+    <span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2018-05-14 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/python/">python<span>1</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  &copy; 2018 kefan.wkf
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a>,<a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>,<a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a> and <a href="http://getbootstrap.com/" target="_blank">BOOTSTRA.386</a>. 
+     <br> Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind.386</a>.   Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>

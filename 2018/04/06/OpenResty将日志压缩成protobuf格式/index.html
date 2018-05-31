@@ -1,0 +1,269 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>OpenResty将日志压缩成protobuf格式 | leixi&#39;s Blog</title>
+  <meta name="author" content="kefan.wkf">
+  
+  <meta name="description" content="protobuf是谷歌提供的混合语言数据标准，是一种结构化数据存储格式，可用于序列化，适合做数据存储和RPC数据交换">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="OpenResty将日志压缩成protobuf格式"/>
+  <meta property="og:site_name" content="leixi&#39;s Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-70812759-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cb5448498d7169c668b07c2b255d62c1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">leixi&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class=""></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> OpenResty将日志压缩成protobuf格式</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> protobuf是谷歌提供的混合语言数据标准，是一种结构化数据存储格式，可用于序列化，适合做数据存储和RPC数据交换
+		 </div> <!-- alert -->
+	  		
+
+	  <p>protobuf是谷歌提供的混合语言数据标准，是一种结构化数据存储格式，可用于序列化，适合做数据存储和RPC数据交换。</p>
+<p>但谷歌官方没有提供适用于lua的版本，比较有名的有两个库，一个是网易猿的protoc-gen-lua，另一个是云风的pbc。</p>
+<p>protoc-gen-lua使用了python来做protoc的插件，把.proto文件生成.lua文件，配合编译出来的pb.so和一些外层包装的lua来进行序列化（类似java中的protobuf使用，.java配合官方jar包），大多数语言的protobuf实现，都是将编码的数据块展开成本地语言的数据结构，如C++／Java，这是比较高效的形式，但对于动态语言，如python／lua，就不一定了。</p>
+<p>pbc是一个C版本的protobuf库，不必为每个message生成一大坨C++代码，因为这样很难做动态语言的binding。直接在C中做的编解码（这里有个自举的过程），然后搞了个lua的binding库在上面封了一层，可以参考下面四篇博客：</p>
+<p><a href="https://blog.codingnow.com/2010/08/proto_buffers_in_lua.html" target="_blank" rel="noopener">proto buffers in lua</a></p>
+<p><a href="https://blog.codingnow.com/2010/08/protobuf_for_lua.html" target="_blank" rel="noopener">继续完善 protobuf 库</a></p>
+<p><a href="https://blog.codingnow.com/2011/12/protocol_buffers_for_c.html" target="_blank" rel="noopener">Protocol Buffers for C</a></p>
+<p><a href="https://blog.codingnow.com/2011/12/pbc_lua_binding.html" target="_blank" rel="noopener">pbc 库的 lua binding</a></p>
+<p>这里使用pbc来完成OpenResty与protobuf的整合：</p>
+<p>1、在pbc-master下执行make，会编译生成build文件夹和下面的静态库libpbc.a</p>
+<p>2、在pbc-master/binding/lua下执行make，利用刚才生动的静态库libpbc.a，以及注册方法给lua解释器的pbc-lua.c，编成一个动态库protobuf.so</p>
+<p>3、在pbc-master/binding/lua下还有一个protobuf.lua是对protobuf.so的封装，将protobuf.lua和protobuf.so拷贝到OpenResty环境中的lualib/resty路径下（lualib/resty里面一般存放了第三方库）</p>
+<p>4、编写描述数据结构的.proto文件，用谷歌提供的protoc工具编成自描述的pb文件格式，如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./protoc --descriptor_set_out message.pb message.proto</span><br></pre></td></tr></table></figure>
+<p>5、在lua文件require刚才拷贝过来的protobuf.lua即可使用，如果提示路径下没有protobuf.lua就用package.path引入路径，如下：<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">package</span>.<span class="built_in">path</span> = <span class="string">'./openresty/lualib/resty/?.lua;'</span></span><br><span class="line"><span class="keyword">local</span> protobuf = <span class="built_in">require</span> <span class="string">"protobuf"</span></span><br></pre></td></tr></table></figure></p>
+<p>6、编码和解码的代码如下：<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">package</span>.<span class="built_in">path</span> = <span class="string">'./openresty/lualib/resty/?.lua;'</span></span><br><span class="line"><span class="keyword">local</span> protobuf = <span class="built_in">require</span> <span class="string">"protobuf"</span></span><br><span class="line"> </span><br><span class="line">addr = <span class="built_in">io</span>.<span class="built_in">open</span>(<span class="string">"./addressbook.pb"</span>,<span class="string">"rb"</span>)</span><br><span class="line">buffer = addr:<span class="built_in">read</span> <span class="string">"*a"</span></span><br><span class="line">addr:<span class="built_in">close</span>()</span><br><span class="line">protobuf.register(buffer)</span><br><span class="line"> </span><br><span class="line"><span class="keyword">local</span> person = &#123;</span><br><span class="line">    name = <span class="string">"Alice"</span>,</span><br><span class="line">    id = <span class="number">123</span>,</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">local</span> buffer = protobuf.encode(<span class="string">"tutorial.Person"</span>, person)</span><br><span class="line"><span class="keyword">local</span> t = protobuf.decode(<span class="string">"tutorial.Person"</span>, buffer)</span><br></pre></td></tr></table></figure></p>
+	  
+	</div>
+
+	<div>
+  	<center>
+	<div class="pagination">
+
+    
+    
+    <a href="/2018/04/28/为什么OpenResty性能好/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2018/01/13/Spring AOP三种实现方式的多纬度差异/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="col-md-3" id="post_meta"> 
+    <span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2018-04-06 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/OpenResty/">OpenResty<span>2</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  &copy; 2018 kefan.wkf
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a>,<a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>,<a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a> and <a href="http://getbootstrap.com/" target="_blank">BOOTSTRA.386</a>. 
+     <br> Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind.386</a>.   Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>

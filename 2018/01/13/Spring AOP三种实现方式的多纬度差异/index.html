@@ -1,0 +1,305 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>Spring AOP三种实现方式的多维度差异 | leixi&#39;s Blog</title>
+  <meta name="author" content="kefan.wkf">
+  
+  <meta name="description" content="记得有一次面试，面试官问我：spring aop是如何实现的，三种实现方式的多维度差异是什么，aop解决了什么问题？
+spring aop是如何实现的，这个拍拍脑门也知道使用了动态代理，我就大概说了下jdk动态代理和CGlib动态代理。
+aop解决了什么问题，大致就是一些通用操作如果一个一个写在业务">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Spring AOP三种实现方式的多维度差异"/>
+  <meta property="og:site_name" content="leixi&#39;s Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-70812759-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cb5448498d7169c668b07c2b255d62c1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">leixi&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class=""></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> Spring AOP三种实现方式的多维度差异</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>记得有一次面试，面试官问我：<strong>spring aop是如何实现的，三种实现方式的多维度差异是什么，aop解决了什么问题？</strong></p>
+<p><strong>spring aop是如何实现的</strong>，这个拍拍脑门也知道使用了动态代理，我就大概说了下jdk动态代理和CGlib动态代理。</p>
+<p><strong>aop解决了什么问题</strong>，大致就是一些通用操作如果一个一个写在业务类中，麻烦不说还容易漏掉，将来改动起来也十分麻烦，所以需要一个统一的<strong>切面（aspect）</strong>去实现这个操作，然后<strong>织入（weaving）</strong>到需要的类中，将来有改动的时候只需要改切面代码就把所有地方都统一改了。</p>
+<p>但是第二个问题给我问懵比了，<strong>三种实现方式的多维度差异？</strong>我在平时只使用过spring+aspectJ的方式，通过@Aspect注解定义一个切面类，然后用@Around注解在方法上定义一个切点表达式，使用ProceedingJoinPoint对象就能拿到需要方法的任何信息，如方法名，参数等，还可以执行这个方法。</p>
+<p>偶然翻到一本书，《架构探险 从零开始写javaweb框架》，这本书中第四章详细阐述了spring aop的前世今生，貌似回答了这个问题，下面记录一下:</p>
+<p>想要在代码中实现aop，大致有以下三种思路：</p>
+<h4 id="1、自己手写动态代理"><a href="#1、自己手写动态代理" class="headerlink" title="1、自己手写动态代理"></a>1、自己手写动态代理</h4><p>自己手写动态代理也是可以实现aop的，有jdk动态代理去代理接口，获取使用CGlib去代理类，写起来代码也是一坨一坨的，后面也不太好维护。</p>
+<h4 id="2、Spring-AOP"><a href="#2、Spring-AOP" class="headerlink" title="2、Spring AOP"></a>2、Spring AOP</h4><p>Spring AOP自身提供的aop能力分为<strong>编程式</strong>和<strong>声明式</strong>两种。</p>
+<p>编程式的是基于AOP接口（Advice），如AfterReturingAdvice，并实现其中的afterReturning方法，最后在代码中通过ProxyFactory将要代理的目标对象和刚才实现的增强一起生成一个proxy代理，但是这种编程式的方法太弱了，基本没办法用，所以又有了声明式的使用方式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建代理工厂</span></span><br><span class="line">ProxyFactory proxyFactory = <span class="keyword">new</span> ProxyFactory();</span><br><span class="line"><span class="comment">// 射入目标类对象</span></span><br><span class="line">proxyFactory.setTarget(<span class="keyword">new</span> GreetingImpl);</span><br><span class="line"><span class="comment">// 添加前置增强</span></span><br><span class="line">proxyFactory.addAdvice(<span class="keyword">new</span> GreetingBeforeAdvice());</span><br><span class="line"><span class="comment">// 从代理工厂中获取代理</span></span><br><span class="line">Greeting greeting = (Greeting) proxyFactory.getProxy();</span><br></pre></td></tr></table></figure>
+<p>声明式是在xml中配置一个代理bean，class为org.springframework.aop.framework.ProxyFactoryBean，将要代理的接口，接口实现类，和增强类注入进去，这样就可以在代码中使用context.getBean(“**Proxy”)得到代理对象了。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=<span class="string">"greetingProxy"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"org.springframework.aop.framework.ProxyFactoryBean"</span>&gt;</span><br><span class="line">	&lt;property name=<span class="string">"interfaces"</span> value=<span class="string">"aop.Greeting"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"target"</span> ref=<span class="string">"greetingImpl"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"interceptorNames"</span> value=<span class="string">"greetingAroundAdvice"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
+<p>但这样的方式每次将一个类里面的所有方法全部代理了，有时候我们想精细化代理，这时候就要用到spring提供的切面类（Advisor）了，如定义一个正则表达式切面RegexpMethodPointcutAdvisor，为其注入增强类和正则表达式，然后将这个切面类注入到ProxyFactoryBean中，代码如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=<span class="string">"greetingAdvisor"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"org.springframework.aop.support.RegexpMethodPointcutAdvisor"</span>&gt;</span><br><span class="line">	&lt;property name=<span class="string">"advice"</span> ref=<span class="string">"greetingAroundAdvice"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"pattern"</span> value=<span class="string">"aop.demon.GreetingImpl.good.*"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">&lt;bean id=<span class="string">"greetingProxy"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"org.springframework.aop.framework.ProxyFactoryBean"</span>&gt;</span><br><span class="line">	&lt;property name=<span class="string">"target"</span> ref=<span class="string">"greetingImpl"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"interceptorNames"</span> value=<span class="string">"greetingAdvisor"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"proxyTargetClass"</span> value=<span class="string">"true"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
+<p>这两种解决方案都不是很理想，除了要定义大量的切面类，还有比较复杂的xml配置，正因为如此，spring最后选择了集成aspectj这个最经典的java aop框架。</p>
+<h4 id="3、Spring-AspectJ"><a href="#3、Spring-AspectJ" class="headerlink" title="3、Spring+AspectJ"></a>3、Spring+AspectJ</h4><p>Spring集成了AspectJ，同时也保留了上面提到的切面与代理配置方式。将Spring和AspectJ集成与直接使用AspectJ是不同的。</p>
+<p>直接使用AspectJ是需要定义aspectj类的（它扩展了java语法，需要用到特殊的编译器ajc），但Spring中只使用了aspectJ的注解和切点表达式（比正则表达式更易懂），举个例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GreetingAspect</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Around</span>(<span class="string">"exection(* aop.demo.GreetingImpl.*(..))"</span>)</span><br><span class="line">	<span class="function"><span class="keyword">public</span> Object <span class="title">around</span><span class="params">(ProceedingJoinPoint pjp)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">		before();</span><br><span class="line">		Object result = pjp.proceed();</span><br><span class="line">		after();</span><br><span class="line">		<span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><table>
+<thead>
+<tr>
+<th>增强类型</th>
+<th>基于AOP接口</th>
+<th>基于AOP注解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Before Advice（前置增强）</td>
+<td>MethodBeforeAdvice</td>
+<td>@Before</td>
+</tr>
+<tr>
+<td>After Advice（后置增强）</td>
+<td>AfterReturningAdvice</td>
+<td>@After</td>
+</tr>
+<tr>
+<td>Around Advice（环绕增强）</td>
+<td>MethodInterceptor</td>
+<td>@Around</td>
+</tr>
+<tr>
+<td>Throws Advice（抛出增强）</td>
+<td>ThrowsAdvice</td>
+<td>@AfterThrowing</td>
+</tr>
+<tr>
+<td>Introduction Advice（引入增强）</td>
+<td>DelegatingIntroductionInterceptor</td>
+<td>@DeclareParents</td>
+</tr>
+</tbody>
+</table>
+	  
+	</div>
+
+	<div>
+  	<center>
+	<div class="pagination">
+
+    
+    
+    <a href="/2018/04/06/OpenResty将日志压缩成protobuf格式/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2017/10/04/虚拟机类加载机制/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="col-md-3" id="post_meta"> 
+    <span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2018-01-13 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/深入学习java/">深入学习java<span>4</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  &copy; 2018 kefan.wkf
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a>,<a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>,<a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a> and <a href="http://getbootstrap.com/" target="_blank">BOOTSTRA.386</a>. 
+     <br> Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind.386</a>.   Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>
