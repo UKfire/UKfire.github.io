@@ -122,6 +122,50 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2018/05/08/记一次OutOfMemoryError的排查/" title="java.lang.OutOfMemoryError这个错误我相信大部分开发人员都有遇到过，产生该错误的原因大都出于以下原因：JVM内存过小、程序不严谨，产生了过多的垃圾">记一次OutOfMemoryError的排查</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2018-05-08  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<h4 id="一、问题所在"><a href="#一、问题所在" class="headerlink" title="一、问题所在"></a>一、问题所在</h4><p>昨天在使用自己写的在线编译器的时候，发现接口访问不正常了，出现了OutOfMemoryError的报错，java.lang.OutOfMemoryError这个错误的产生原因基本初夏：JVM内存太小、程序不严谨，产生过多无法被垃圾回收的内存。</p>
+<p>登录到开发机上，先用top结合jps看一下问题进程的pid，再使用jmap命令将内存heap输出：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jmap -dump:format=b,file=heap.bin pid</span><br></pre></td></tr></table></figure></p>
+<p>然后拷贝到本地电脑在mat中进行分析，点击Action下的Histogram，列出每个类实例的数量，发现是char[]占用了大量的内存,接着看Dominator Tree，从占用内存最多的类开始往下看，发现了CompilerPrintStream里面引用了StringBuilder，StringBuilder又引用了char[]，查看代码发现是CompilerPrintStream忘记关闭了。</p>
+<p>CompilerPrintStream是继承自PrintStream，用于将标准输出重定向到一个StringBuilder中，然后通过这个StringBuilder将在线编译运行的代码输出进行记录返回：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CompilerPrintStream</span> <span class="keyword">extends</span> <span class="title">PrintStream</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> StringBuilder compileResult;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CompilerPrintStream</span><span class="params">(OutputStream out, StringBuilder compileResult)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(out);</span><br><span class="line">        <span class="keyword">this</span>.compileResult = compileResult;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(<span class="keyword">byte</span>[] buf, <span class="keyword">int</span> off, <span class="keyword">int</span> len)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> String message = <span class="keyword">new</span> String(buf, off, len);</span><br><span class="line">        compileResult.append(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后就是这段代码出的内存泄漏问题：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>&#123;</span><br><span class="line">    StringBuilder compileResult = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    CompilerPrintStream compilerPrintStream = <span class="keyword">new</span> CompilerPrintStream(System.out, compileResult);</span><br><span class="line">    System.setOut(compilerPrintStream);</span><br><span class="line">    ...</span><br><span class="line">&#125;<span class="keyword">catch</span>(Exception e)&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>问题就出在忘记在处理完成后，将PrintStream进行close操作，导致其无法被释放，间接的影响其引用的StringBuilder也无法释放，累计了很多垃圾导致了OutOfMemoryError</p>
+<hr>
+<h4 id="二、修改方法"><a href="#二、修改方法" class="headerlink" title="二、修改方法"></a>二、修改方法</h4><p>使用try-with-resources语法，可以将一些约定俗成的实现了AutoCloseable自动进行close操作：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">StringBuilder compileResult = <span class="keyword">new</span> StringBuilder();</span><br><span class="line"><span class="keyword">try</span> (CompilerPrintStream compilerPrintStream = <span class="keyword">new</span> CompilerPrintStream(System.out, compileResult)) &#123;</span><br><span class="line">    System.setOut(compilerPrintStream);</span><br><span class="line">    ...</span><br><span class="line">&#125;<span class="keyword">catch</span>(Exception e)&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h4 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h4><p>导致OutOfMemoryError异常的常见原因有以下几种：</p>
+<ul>
+<li>内存中加载的数据量过于庞大，如一次从数据库取出过多数据；</li>
+<li>一些特殊大对象的引用，使用完后未清空，使得JVM不能回收；</li>
+<li>代码中存在死循环或循环产生过多重复的对象实体；</li>
+<li>启动参数内存值设定的过小；</li>
+</ul>
+<p>这里可以说是第二种，各种提供了close方法的对象，比如数据库连接，网络连接，io操作等，除非显示调用了其close方法，否则是不会被GC回收的，原因是长生命周期对象持有短生命周期对象的引用。</p>
+
+	
+	</div>
+  <a type="button" href="/2018/05/08/记一次OutOfMemoryError的排查/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2018/04/28/为什么OpenResty性能好/" title="OpenResty是一个Web应用服务器，它打包了标准Nginx核心和很多常用第三方模块，通过nginx_lua模块使得Nginx服务器不再只是一个负载均衡服务器或是静态资源服务器，而是转变为一个强大的Web应用服务器，它使用Lua语言对Nginx核心以及现有的各种Nginx C模块进行脚本编程，构建出可充分利用Nginx的事件模型来进行非阻塞I/O通信，处理一万以上并发请求的极端高性能Web应用">为什么OpenResty性能好</a>
 		</h3>
 		</div>
@@ -611,7 +655,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/OpenResty/">OpenResty<span>2</span></a></li>
 		
-			<li><a href="/categories/PPP/">PPP<span>4</span></a></li>
+			<li><a href="/categories/PPP/">PPP<span>5</span></a></li>
 		
 			<li><a href="/categories/jvm/">jvm<span>5</span></a></li>
 		
@@ -636,6 +680,10 @@ var _hmt = _hmt || [];
   <ul class="entry list-unstyled">
     
       <li>
+        <a href="/2018/06/02/我理解的PPP-SINGLETON模式和MONOSTATE模式/"  title="这两个模式都是强制对象单一性的模式" ><i class="fa fa-file-o"></i>我理解的PPP-SINGLE模式和MONOSTATE模式</a>
+      </li>
+    
+      <li>
         <a href="/2018/05/29/nio中的多路复用IO模型/" ><i class="fa fa-file-o"></i>nio中的多路复用IO模型</a>
       </li>
     
@@ -649,10 +697,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/05/22/关于数据报表时效性问题的思考/"  title="最近工作上的一些体会，一家之言" ><i class="fa fa-file-o"></i>关于数据报表时效性问题的思考</a>
-      </li>
-    
-      <li>
-        <a href="/2018/05/20/我理解的PPP-ACTIVE OBJECT模式/" ><i class="fa fa-file-o"></i>我理解的PPP-ACTIVE_OBJECT模式</a>
       </li>
     
   </ul>
