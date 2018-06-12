@@ -122,6 +122,45 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2018/05/14/python皮excel/" >python皮excel</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2018-05-14  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<p>最近和运营接触得比较多，对运营玩转excel的技术不由的心生佩服，一拖一拽，就把各种类型的数据拎出来了，再点两下，就绘制成图表了，而且速度之快不亚于当时acm集训队那种噼里啪啦的敲键盘速度，真的是行行出状元啊，excel玩得6也能走向人生巅峰。</p>
+<p>因为要给运营整合数据，所以用python疯狂操作了一发excel，什么合并单元格、飘红、加粗都不在话下，这里记录一下：</p>
+<p>Python操作excel用到了两个包，<strong>xlrd</strong>和<strong>xlwt</strong>，xlrd是用于读取excel，xlwt是用于写入excel。</p>
+<h4 id="读excel"><a href="#读excel" class="headerlink" title="读excel"></a>读excel</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 打开data.xls</span><br><span class="line">wb = xlrd.open_workbook(<span class="string">r'../data.xls'</span>)</span><br><span class="line">// 使用第一个工作薄</span><br><span class="line">sheet = wb.sheet_by_index(<span class="number">0</span>)</span><br><span class="line">// 读取第一列的元素，返回一个list</span><br><span class="line">cols0 = sheet.col_values(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>读excel的就用到这么多，因为只需要读取原文件的某几列先预处理一下就行了。</p>
+<h4 id="写excel"><a href="#写excel" class="headerlink" title="写excel"></a>写excel</h4><p>写excel有两个api，一个是单个单元格写入的write，另一个是写入并合并单元格的write_merge。</p>
+<p>先介绍下write(r,c,data,style)，r是要写入的行号，c是要写入的列号，都从0开始，data是这个单元格要写入的数据，style是单元格样式，后面介绍；</p>
+<p>写入合并单元格的参数比write要多两个，write_merge(r,r1,c,c1,data,style)，r是起始行号，r1是终点行号，c是起始列号，c1是终止列号，data、style和write一样。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">// 打开一个Workbook，编码utf<span class="number">-8</span></span><br><span class="line">wb = xlwt.Workbook(encoding=<span class="string">'utf-8'</span>)</span><br><span class="line">// 给这个文件新加一个工作薄</span><br><span class="line">sheet = wb.add_sheet(<span class="string">"工作薄1"</span>,cell_overwrite_ok=<span class="keyword">True</span>)</span><br><span class="line">// 给单元格设置style，后面介绍</span><br><span class="line">style = set_style(<span class="string">'SimSun'</span>,<span class="number">220</span>)</span><br><span class="line"></span><br><span class="line">row = [<span class="string">u'姓名'</span>,<span class="string">u'年龄'</span>,<span class="string">u'爱好'</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(row)):</span><br><span class="line">	// 给表格第一、二行（合并单元格）前三列分别写入姓名,年龄,籍贯</span><br><span class="line">	sheet.write_merge(<span class="number">0</span>,<span class="number">1</span>,i,i,row[i],style)</span><br><span class="line"></span><br><span class="line">data = [<span class="string">u'雷犀'</span>,<span class="number">18</span>,<span class="string">u'跳水'</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(data)):</span><br><span class="line">	// 给表格第三行前三列分别写入雷犀,<span class="number">18</span>,跳水</span><br><span class="line">	sheet.write(<span class="number">2</span>,i,data[i],style)</span><br><span class="line"></span><br><span class="line">// 保存数据</span><br><span class="line">wb.save(<span class="string">'../pi.xls'</span>)</span><br></pre></td></tr></table></figure>
+<p>其中无论是write还是write_merge都需要一个style参数，这个代表了单元格的样式，看下面的set_style函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">def <span class="title">set_style</span><span class="params">(name,height,bgyellow=False,color=<span class="number">0</span>,bold=False)</span>:</span></span><br><span class="line"><span class="function">	style </span>= xlwt.XFStyle()</span><br><span class="line"></span><br><span class="line">	font = xlwt.Font()</span><br><span class="line">	<span class="comment">// 设置字体</span></span><br><span class="line">	font.name = name</span><br><span class="line">	<span class="comment">// 是否加粗</span></span><br><span class="line">	font.bold = bold</span><br><span class="line">	<span class="comment">// 字体颜色，0代表黑色，2代表红色</span></span><br><span class="line">	font.colour_index = color</span><br><span class="line">	<span class="comment">// 设置字体高度</span></span><br><span class="line">	font.height = height</span><br><span class="line">	style.font = font</span><br><span class="line"></span><br><span class="line">	alignment = xlwt.Alignment()</span><br><span class="line">	<span class="comment">// 水平居中</span></span><br><span class="line">	alignment.horz = xlwt.Alignment.HORZ_CENTER</span><br><span class="line">	<span class="comment">// 垂直居中</span></span><br><span class="line">	alignment.vert = xlwt.Alignment.VERT_CENTER</span><br><span class="line">	style.alignment = alignment</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> bgyellow:</span><br><span class="line">		ptn = xlwt.Pattern()</span><br><span class="line">		<span class="comment">// 背景颜色是实体</span></span><br><span class="line">		ptn.pattern = xlwt.Pattern.SOLID_PATTERN</span><br><span class="line">		<span class="comment">// 背景颜色是黄色</span></span><br><span class="line">		ptn.pattern_fore_colour = <span class="number">0x0D</span></span><br><span class="line">		<span class="comment">// 这个pattern属性不设置，默认白色背景</span></span><br><span class="line">		style.pattern = ptn</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> style</span><br></pre></td></tr></table></figure>
+<p>在查找资料的过程中发现这样一行一行手撸excel虽说可以做到比较精细调整样式，但代码比较恶心，听说用pandas包中的DataFrame数据结构可以很轻松的一键转成csv，后面有机会要学一下，睡了，不皮了。</p>
+
+	
+	</div>
+  <a type="button" href="/2018/05/14/python皮excel/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2018/05/10/谈一谈Java中的几种引用/" title="如果reference类型的数据中存储的数值代表的是另一块内存的起始地址，就称这块内存代表着一个引用，这种对引用的定义未免太过狭隘">谈一谈Java中的几种引用</a>
 		</h3>
 		</div>
@@ -573,48 +612,6 @@ var _hmt = _hmt || [];
 </div>
 
 		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2017/07/10/GCROOTS和垃圾收集算法/" >GCROOTS和垃圾收集算法</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2017-07-10  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<h4 id="GC-Roots"><a href="#GC-Roots" class="headerlink" title="GC Roots"></a>GC Roots</h4><p>很多语言是通过可达性算法来判断对象是否存活，这个算法的基本思路就是通过一系列成为GC ROOTS的对象作为起始点，从这些节点开始向下搜索，搜索走过的路径成为引用链（Reference Chain），当一个对象到GC ROOTS没有任何引用链相连时，则证明此对象不可达。</p>
-<p>在Java中，可作为GC ROOTS的对象包括下面几种：</p>
-<ul>
-<li>本地变量表中引用的对象</li>
-<li>方法区中类静态属性引用的对象</li>
-<li>方法区中常量引用的对象（常量池是方法区的一部分，常量池在编译期间就将一部分数据存放于该区域，如基本数据类型int、long，final声明的常量，和String字符串，特别注意的是对于方法运行期位于栈中局部变量String常量的值，可以通过String.intern()方法将该值放入常量池中）</li>
-<li>本地方法栈中JNI引用的对象</li>
-</ul>
-<h4 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h4><p>下面介绍几种垃圾收集算法思想（摘自《深入理解Java虚拟机》）</p>
-<h6 id="标记-清除算法（Mark-Sweep）"><a href="#标记-清除算法（Mark-Sweep）" class="headerlink" title="标记-清除算法（Mark-Sweep）"></a>标记-清除算法（Mark-Sweep）</h6><p>最基础的收集算法，分为标记和清除两个阶段：首先标记出所有需要回收的对象，在标记完成后统一回收所有被标记的对象。它的两个主要缺点：一个是效率问题，标记和清除的效率都不高；另一个是空间问题，标记清除后会产生大量不连续的内存碎片。</p>
-<h6 id="复制算法（Copying）"><a href="#复制算法（Copying）" class="headerlink" title="复制算法（Copying）"></a>复制算法（Copying）</h6><p>为了解决效率问题，复制算法将可用内存按容量划分为大小相等的两块，每次只使用其中一块，当这一块内存使用完了，就将还存活的对象复制到另外一块上面，然后再把使用过的内存空间一次清理掉。这样使得每次都对整个半区进行内存回收，内存分配时也不用考虑内存碎片情况，只要移动堆顶指针，按顺序分配内存即可，实现简单，运行高效。这种算法将可用内存缩小了一半，代价太高。</p>
-<p>现代的商业虚拟机都是采用这种算法来回收<strong>新生代</strong>，因为新生代中98%的对象都是“朝生夕死”的，所以并不需要按照1:1的比例来划分内存空间，而是将内存分为一块较大的Eden空间和两块较小的Survivor空间，每次使用Eden和其中一块Survivor。当回收时，将Eden和Survivor中还存活的对象一次性复制到另一块Survivor中，最后清理掉Eden和刚才使用过的Survivor空间。HotSpot虚拟机默认Eden和Survivor的大小比例是8:1，这样每次新生代中可用内存空间为整个新生代容量的90%，只有10%的内存会被“浪费”。</p>
-<p>当然，我们没办法保证每次回收都是只有不多于10%的对象存活，当Survivor空间不够用时，需要依赖其他内存（老年代）进行<strong>分配担保（Handle Promotion）</strong>。如果另一块Survivor空间没有足够空间放上一次新生代收集下来的存活对象时，这些对象将直接通过分配担保机制进入老年代。</p>
-<h6 id="标记-整理算法（Mark-Compact）"><a href="#标记-整理算法（Mark-Compact）" class="headerlink" title="标记-整理算法（Mark-Compact）"></a>标记-整理算法（Mark-Compact）</h6><p>复制算法在对象存活率较高时就要进行很多复制操作，效率就会变低，还需要额外的空间进行分配担保，以应对存活对象大于Survivor空间的情况，所以老年代一般使用“标记-整理”算法。</p>
-<p>根据老年代的特点（对象存活率较高），提出了“标记-整理”算法，这种算法和“标记-清除”算法一样，但后续步骤不是直接对可回收对象进行清理，而是让所有存活对象都移向一边，然后直接清理掉边界以外的内存。</p>
-
-	
-	</div>
-  <a type="button" href="/2017/07/10/GCROOTS和垃圾收集算法/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
 
 		</div>
 
@@ -669,7 +666,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/OpenResty/">OpenResty<span>2</span></a></li>
 		
-			<li><a href="/categories/PPP/">PPP<span>5</span></a></li>
+			<li><a href="/categories/PPP/">PPP<span>6</span></a></li>
 		
 			<li><a href="/categories/jvm/">jvm<span>5</span></a></li>
 		
@@ -694,6 +691,10 @@ var _hmt = _hmt || [];
   <ul class="entry list-unstyled">
     
       <li>
+        <a href="/2018/06/10/我理解的PPP-NULL OBJECT模式/" ><i class="fa fa-file-o"></i>我理解的PPP-NULL OBJECT模式</a>
+      </li>
+    
+      <li>
         <a href="/2018/06/07/ThreadLocal中的Lambda表达式/" ><i class="fa fa-file-o"></i>ThreadLocal中的Lamdba表达式</a>
       </li>
     
@@ -707,10 +708,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/05/26/我理解的PPP-STRATEGY模式/"  title="STRATEGY模式使用委托来倒置通用算法和具体实现之间的依赖关系" ><i class="fa fa-file-o"></i>我理解的PPP-STRATEGY模式</a>
-      </li>
-    
-      <li>
-        <a href="/2018/05/24/我理解的PPP-TEMPLATE模式/"  title="TEMPLATE模式使用继承解决问题，而STRATEGY模式使用的则是委托" ><i class="fa fa-file-o"></i>我理解的PPP-TEMPLATE模式</a>
       </li>
     
   </ul>
