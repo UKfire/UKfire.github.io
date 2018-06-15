@@ -122,7 +122,7 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
-			<a href="/2018/06/15/Optional类中两组方法的比较/" title="Java 8引入了Lambda表达式，以及Stream类表示流式处理，在max()，min()等函数中返回的就是Optional对象，Optional帮助Java实现了函数式编程。">Optional类中两组方法的比较</a>
+			<a href="/2018/06/15/Optional类中三组方法的比较/" title="Java 8引入了Lambda表达式，以及Stream类表示流式处理，在max()，min()等函数中返回的就是Optional对象，Optional帮助Java实现了函数式编程。">Optional类中三组方法的比较</a>
 		</h3>
 		</div>
 	<div class="col-md-4">
@@ -136,7 +136,7 @@ var _hmt = _hmt || [];
   <div class="row">
 	
 	
-		<p>Optional不仅帮助Java实现函数式编程，还顺带解决了臭名昭著的空指针问题。其实解决空指针问题的思路都类似，如我之前写的这篇文章，<a href="https://ytying.com/2018/06/10/%E6%88%91%E7%90%86%E8%A7%A3%E7%9A%84PPP-NULL%20OBJECT%E6%A8%A1%E5%BC%8F/" target="_blank" rel="noopener">我理解的PPP-NULL OBJECT模式</a>，无论是通过重写get(）方法，还是实现一个空对象，以及Optional将value包装起来，避免的都是同一个问题：对null的调用。这里讨论一下Optional中两组很相似的方法。先假设一个场景，有个方法返回了Optional包装的String对象，如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Optional <span class="title">getHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> Optional.ofNullable(<span class="string">"hello"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">createString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"hi"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+		<p>Optional不仅帮助Java实现函数式编程，还顺带解决了臭名昭著的空指针问题。其实解决空指针问题的思路都类似，如我之前写的这篇文章，<a href="https://ytying.com/2018/06/10/%E6%88%91%E7%90%86%E8%A7%A3%E7%9A%84PPP-NULL%20OBJECT%E6%A8%A1%E5%BC%8F/" target="_blank" rel="noopener">我理解的PPP-NULL OBJECT模式</a>，无论是通过重写get(）方法，还是实现一个空对象，以及Optional将value包装起来，避免的都是同一个问题：对null的调用。这里讨论一下Optional中三组很相似的方法。先假设一个场景，有个方法返回了Optional包装的String对象，如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Optional <span class="title">getHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> Optional.ofNullable(<span class="string">"hello"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">createString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"hi"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h6 id="orElse和orElseGet"><a href="#orElse和orElseGet" class="headerlink" title="orElse和orElseGet"></a>orElse和orElseGet</h6><p>先看这个例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Optional opt = getHello();</span><br><span class="line"></span><br><span class="line">String orElseRes = opt.orElse(createString());</span><br><span class="line">String orElseGetRes = opt.orElseGet(() -&gt; createString());</span><br></pre></td></tr></table></figure></p>
 <p>看似没有什么不同，如果opt中的value不为空，则返回value，如果为空则返回createString()方法新创建的字符串，但仔细看源码：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> T <span class="title">orElse</span><span class="params">(T other)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> value != <span class="keyword">null</span> ? value : other;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -153,7 +153,7 @@ var _hmt = _hmt || [];
 
 	
 	</div>
-  <a type="button" href="/2018/06/15/Optional类中两组方法的比较/#more" class="btn btn-default more">Read More</a>
+  <a type="button" href="/2018/06/15/Optional类中三组方法的比较/#more" class="btn btn-default more">Read More</a>
 </div>
 
 		
@@ -556,7 +556,7 @@ var _hmt = _hmt || [];
   <ul class="entry list-unstyled">
     
       <li>
-        <a href="/2018/06/15/Optional类中两组方法的比较/"  title="Java 8引入了Lambda表达式，以及Stream类表示流式处理，在max()，min()等函数中返回的就是Optional对象，Optional帮助Java实现了函数式编程。" ><i class="fa fa-file-o"></i>Optional类中两组方法的比较</a>
+        <a href="/2018/06/15/Optional类中三组方法的比较/"  title="Java 8引入了Lambda表达式，以及Stream类表示流式处理，在max()，min()等函数中返回的就是Optional对象，Optional帮助Java实现了函数式编程。" ><i class="fa fa-file-o"></i>Optional类中三组方法的比较</a>
       </li>
     
       <li>
