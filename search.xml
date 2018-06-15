@@ -3,6 +3,21 @@
   
     
     <entry>
+      <title>非常生动的一张描述JOIN的图</title>
+      <link href="/2018/06/12/%E9%9D%9E%E5%B8%B8%E7%94%9F%E5%8A%A8%E7%9A%84%E4%B8%80%E5%BC%A0%E6%8F%8F%E8%BF%B0JOIN%E7%9A%84%E5%9B%BE/"/>
+      <url>/2018/06/12/%E9%9D%9E%E5%B8%B8%E7%94%9F%E5%8A%A8%E7%9A%84%E4%B8%80%E5%BC%A0%E6%8F%8F%E8%BF%B0JOIN%E7%9A%84%E5%9B%BE/</url>
+      <content type="html"><![CDATA[<p>JOIN分为内连接（inner join），外连接（outer join），左连接（left join），右连接（right join），自然连接（nature join），大致就是哪个当左表，哪个当右表，排除什么，不排除什么，哪个为空，哪个不为空。</p><p>总之，直接参考下图就可以了，简单易懂不混淆：<br><img src="https://ytying.com/img/join.png" alt="join示意图"></p>]]></content>
+      
+      <categories>
+          
+          <category> PPP </category>
+          
+      </categories>
+      
+      
+    </entry>
+    
+    <entry>
       <title>我理解的PPP-NULL OBJECT模式</title>
       <link href="/2018/06/10/%E6%88%91%E7%90%86%E8%A7%A3%E7%9A%84PPP-NULL%20OBJECT%E6%A8%A1%E5%BC%8F/"/>
       <url>/2018/06/10/%E6%88%91%E7%90%86%E8%A7%A3%E7%9A%84PPP-NULL%20OBJECT%E6%A8%A1%E5%BC%8F/</url>

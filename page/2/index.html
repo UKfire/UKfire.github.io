@@ -122,6 +122,43 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2018/05/15/iPad看代码靠谱吗/" >iPad看代码靠谱吗</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2018-05-15  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<p>这几天突发奇想，平时抱着iPad就是看视频玩游戏，未免太颓废了，如果能用抱着iPad的时间读读源码，古人云书读百遍，其义自现，我理解代码也是一样，哪怕一时读不懂，或者整体架构太过庞杂不能融会贯通，也能读读注释，或者记下几个片段，日积月累，也是不小的收获。</p>
+<p>于是上网查了一发iPad上看代码的软件，发现并不是我一个人这么想，就连OpenResty的作者<strong>agentzh</strong>当初在学 Nginx源码的时候，也是用 Kindle抄代码来回揣摩：</p>
+<blockquote>
+<p>如果你把抄书和抄代码仅视为一种“态度”，那可就大错特错了，我可不是那种笨人。我当年学习 Nginx 源码的时候，白天上班就对着 Kindle 抄 C 源，同时就已暗记于心，晚上回家在房子里来回踱步，在脑海中反复回放白天抄过的源码，直至融会贯通，深得其奥妙。这段日子持续了一二月后，便大彻大悟了。</p>
+</blockquote>
+<p>看到这段话就下定决心要把iPad利用起来，网上推荐了Code Viewer,但是我在导入jdk源码的时候总是莫名闪退，可能是我的平板太老了…</p>
+<p>后面找到一个更好用的软件，<strong>Code Navigator</strong>，免费版的可以导入5个代码库，可以用局域网从电脑上传到iPad上，收费版的是50元，支持从github上导入等更多功能。</p>
+<p>于是我花了半个小时，读了HashMap,ConcurrentHashMap,TreeMap,Finalizer等类的……注释</p>
+<p>因为屏幕小，类之间不能灵活切换，看起来有点费劲的，我觉得更适合读一些你已经知道怎么用了，但是对内部实现不是很清楚的局部代码，对于全局的把控还是略显捉襟见肘。</p>
+<p>后面准备整个rpc框架的代码看看，平时用的多了，基本原理也知道，仔细看看如何实现，如何设计应该大有裨益。</p>
+
+	
+	</div>
+  <a type="button" href="/2018/05/15/iPad看代码靠谱吗/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2018/05/14/python皮excel/" >python皮excel</a>
 		</h3>
 		</div>
@@ -573,45 +610,6 @@ var _hmt = _hmt || [];
 </div>
 
 		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2017/08/02/HotSpot垃圾收集器/" >HotSpot中的垃圾收集器</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2017-08-02  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<p>垃圾收集器是上篇文章垃圾收集算法的具体实现，这里看下HotSpot虚拟机提供的垃圾收集器：</p>
-<p><img src="https://ytying.com/img/hotspot-gc-collectors.png" alt="hotspot垃圾收集器"></p>
-<p>当GC只发生在新生代中，成为MinorGC；当GC发生在老年代中时，成为MajorGC或FullFC。如果两个垃圾收集器之间存在连线，就说明它们可搭配使用。</p>
-<h4 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h4><p>Serial是最基本的垃圾收集器，新生代采用了复制算法暂停所有用户线程这就是大名鼎鼎的“stop the world”，虽是第一代垃圾收集器，但因为简单而高效，仍是<strong>clien</strong>模式下的默认的<strong>新生代</strong>垃圾收集器。</p>
-<h4 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h4><p>ParNew是Serial的多线程版本，同样在新生代采用了复制算法，它是运行在<strong>server</strong>模式下默认的<strong>新生代</strong>垃圾收集器，因为除了Serial外，只有ParNew能跟CMS配合工作。Parnew是在使用-XX:+UseConcMarkSweepGC选项后的默认新生代收集器，也可以使用-XX:+UseParNewGC选项来强行制定它。</p>
-<h4 id="Parallel-Scavenge收集器"><a href="#Parallel-Scavenge收集器" class="headerlink" title="Parallel Scavenge收集器"></a>Parallel Scavenge收集器</h4><p>Parallel Scavenge是一个新生代收集器，也是使用复制算法的多线程收集器，那么和ParNew有什么区别呢？</p>
-<p>Parallel Scavenge收集器的特点是它的关注点和其他收集器不同，CMS等收集器的关注点是尽可能缩短垃圾回收的用户线程停顿时间，而Parallel Scavenge收集器的目标是达到一个可控制的吞吐量（Throughput）。所谓吞吐量就是CPU运行于用户线程的时间和CPU总消耗时间的比值，即<strong>吞吐量=运行用户代码时间/(运行用户代码时间+垃圾收集时间)</strong>。因此Parallel Scavenge也被称为吞吐量优先收集器。</p>
-<p>停顿时间越短（如CMS等关注的重点）就越适合交互式应用；而高吞吐量则适合用户高效利用CPU完成计算的后台运算任务。</p>
-<p>提供了两个参数用于控制吞吐量，分别是控制最大垃圾收集停顿时间-XX:MaxGCPauseMillis，和直接设置吞吐量大小的-XX:GCTimeRatio（默认值是99，即允许最大1%的垃圾收集时间），此外还有一个-XX:+UseAdaptiveSizePolicy参数，这是一个开关参数，打开后就不需要手动指定新生代大小（-Xmn）和晋升老年代对象年龄（-XX:PretenureSizeThreshold）等细节参数了，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或最大吞吐量，称之为GC自适应调节策略。</p>
-<h4 id="Serial-Old收集器"><a href="#Serial-Old收集器" class="headerlink" title="Serial Old收集器"></a>Serial Old收集器</h4><p>Serial Old是Serial的老年代版本，同样是一个单线程收集器，使用“标记-整理”算法来回收老年代垃圾，它作为CMS的后备预案，在并发收集发生Concurrent Mode Failure时使用。</p>
-<h4 id="Parallel-Old收集器"><a href="#Parallel-Old收集器" class="headerlink" title="Parallel Old收集器"></a>Parallel Old收集器</h4><p>Parallel Old是Parallel Scavenge收集器的老年代版本，使用多线程“标记-整理”算法，在jdk1.6之前，因为没有Parallel Old收集器，Parallel Scavenge只能与Serial Old收集器配合使用，因为Serial Old在性能上的拖累，导致使用Parallel Scavenge收集器未必能在整体应用上获得吞吐量最大化的效果，甚至还不如ParNew加CMS的组合。直到Parallel Old出现后，“吞吐量优先”终于比较名副其实了。</p>
-<h4 id="CMS收集器"><a href="#CMS收集器" class="headerlink" title="CMS收集器"></a>CMS收集器</h4><p><a href="https://ytying.com" target="_blank" rel="noopener">CMS垃圾收集器</a></p>
-
-	
-	</div>
-  <a type="button" href="/2017/08/02/HotSpot垃圾收集器/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
 
 		</div>
 
@@ -666,7 +664,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/OpenResty/">OpenResty<span>2</span></a></li>
 		
-			<li><a href="/categories/PPP/">PPP<span>6</span></a></li>
+			<li><a href="/categories/PPP/">PPP<span>7</span></a></li>
 		
 			<li><a href="/categories/jvm/">jvm<span>5</span></a></li>
 		
@@ -691,6 +689,10 @@ var _hmt = _hmt || [];
   <ul class="entry list-unstyled">
     
       <li>
+        <a href="/2018/06/12/非常生动的一张描述JOIN的图/"  title="一个统计需求，join了七张表，一会inner，一会left，幸好有这张神图" ><i class="fa fa-file-o"></i>非常生动的一张描述JOIN的图</a>
+      </li>
+    
+      <li>
         <a href="/2018/06/10/我理解的PPP-NULL OBJECT模式/" ><i class="fa fa-file-o"></i>我理解的PPP-NULL OBJECT模式</a>
       </li>
     
@@ -704,10 +706,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/05/29/nio中的多路复用IO模型/" ><i class="fa fa-file-o"></i>nio中的多路复用IO模型</a>
-      </li>
-    
-      <li>
-        <a href="/2018/05/26/我理解的PPP-STRATEGY模式/"  title="STRATEGY模式使用委托来倒置通用算法和具体实现之间的依赖关系" ><i class="fa fa-file-o"></i>我理解的PPP-STRATEGY模式</a>
       </li>
     
   </ul>
