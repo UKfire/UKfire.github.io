@@ -122,6 +122,47 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2017/08/03/CMS垃圾收集器/" >CMS垃圾收集器</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2017-08-03  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<p>CMS垃圾收集器是jdk1.5中发布的，CMS的目标就是获取最短的用户线程停顿时间，从名字Mark-Sweep就可以看出，采用了“标记-清除”算法实现，整个过程分成4个步骤:</p>
+<ul>
+<li>初始标记（CMS initial mark）</li>
+<li>并发标记（CMS concurrent mark）</li>
+<li>重新标记（CMS remark）</li>
+<li>并发清除（CMS concurrent sweep）</li>
+</ul>
+<p>其中初始标记和重新标记仍然需要“stop the world”。初始标记仅是标记一下GC ROOTS直接关联到的对象，速度很快，而重新标记阶段是为了修正并发标记期间用户程序继续运作而导致标记产生变动的那一部分对象标记，整体流程如下图所示：</p>
+<p><img src="https://ytying.com/img/cms.png" alt="CMS垃圾收集器"></p>
+<p>CMS虽然是一款优秀的垃圾收集器，但是也远达不到完美的成都，它的缺点如下：</p>
+<ul>
+<li>CMS收集器无法处理浮动垃圾，也就是说CMS在并发清理阶段用户线程还在运行着，伴随着程序运行会产生新的垃圾，这一部分垃圾只能等到下一个GC，就称为<strong>浮动垃圾</strong>，所以CMS不能像其他收集器那样等到老年代满了再进行垃圾回收，需要预留一部分空间提供并发收集时的程序运作使用，jdk1.5的默认设置是68%，jdk1.6中，cMS的启动阈值提升至92%，但是一旦在CMS运行期间预留的内存无法满足程序需要，就会出现<strong>“Concurrent Mode Failure”</strong>失败，这是虚拟机会启动后备预案，即前面说过的Serial Old，这样停顿时间就很长了，所以参数-XX:CMSInitiatingOccupancyFraction设置的太高容易造成大量的“Concurrent Mode Failure”失败，性能反而降低。</li>
+<li>还有一个缺点是，CMS是一款“标记-清除”算法的收集器，那么就意味着收集结束会有大量空间碎片产生。空间碎片过多，会出现即使还剩很多内存空间，但无法找到足够大的连续的空间来分配对象，不得不提前触发一次Full GC。为了解决这个问题，CMS提供了一个-XX:UseCMSCompactAtFullCollection开关参数（默认就是开启的），用于在CMS顶不住要Full GC的时候开启内存碎片的合并整理，内存整理是无法并发的，停顿时间就会变长。此外，还有一个参数-XX:CMSFullGCsBeforeCompaction，这个参数用于设置执行多少次不压缩的Full GC后，跟着来一次带压缩的（默认是0，即每次进入Full GC时都进行碎片整理）。</li>
+</ul>
+
+	
+	</div>
+  <a type="button" href="/2017/08/03/CMS垃圾收集器/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2017/08/02/HotSpot垃圾收集器/" >HotSpot中的垃圾收集器</a>
 		</h3>
 		</div>
@@ -292,15 +333,15 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/OpenResty/">OpenResty<span>2</span></a></li>
 		
-			<li><a href="/categories/PPP/">PPP<span>7</span></a></li>
+			<li><a href="/categories/PPP/">PPP<span>6</span></a></li>
 		
 			<li><a href="/categories/jvm/">jvm<span>5</span></a></li>
 		
 			<li><a href="/categories/python/">python<span>1</span></a></li>
 		
-			<li><a href="/categories/深入学习java/">深入学习java<span>5</span></a></li>
+			<li><a href="/categories/深入学习java/">深入学习java<span>6</span></a></li>
 		
-			<li><a href="/categories/瞎搞/">瞎搞<span>2</span></a></li>
+			<li><a href="/categories/瞎搞/">瞎搞<span>3</span></a></li>
 		
 			<li><a href="/categories/解bug之路/">解bug之路<span>1</span></a></li>
 		
@@ -317,6 +358,10 @@ var _hmt = _hmt || [];
   <ul class="entry list-unstyled">
     
       <li>
+        <a href="/2018/06/15/Optional类中两组方法的比较/"  title="Java 8引入了Lambda表达式，以及Stream类表示流式处理，在max()，min()等函数中返回的就是Optional对象，Optional帮助Java实现了函数式编程。" ><i class="fa fa-file-o"></i>Optional类中两组方法的比较</a>
+      </li>
+    
+      <li>
         <a href="/2018/06/12/非常生动的一张描述JOIN的图/"  title="一个统计需求，join了七张表，一会inner，一会left，幸好有这张神图" ><i class="fa fa-file-o"></i>非常生动的一张描述JOIN的图</a>
       </li>
     
@@ -330,10 +375,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/06/02/我理解的PPP-SINGLETON模式和MONOSTATE模式/"  title="这两个模式都是强制对象单一性的模式" ><i class="fa fa-file-o"></i>我理解的PPP-SINGLETON模式和MONOSTA...</a>
-      </li>
-    
-      <li>
-        <a href="/2018/05/29/nio中的多路复用IO模型/" ><i class="fa fa-file-o"></i>nio中的多路复用IO模型</a>
       </li>
     
   </ul>
