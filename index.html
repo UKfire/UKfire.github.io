@@ -122,6 +122,43 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2018/07/02/python2.7不支持SNI引发的问题/" >python2.7不支持SNI引发的问题</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2018-07-02  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<h4 id="一、问题所在"><a href="#一、问题所在" class="headerlink" title="一、问题所在"></a>一、问题所在</h4><p>在爬取一个网站的图片时碰到https的图片没有办法通过requests.get方法获取到返回的二进制，并报了<code>requests.exceptions.SSLError: HTTPSConnectionPool</code>的错误，不解，查了一下，发现是因为python2.7不支持SNI导致的。</p>
+<p>这个SNI是什么呢？因为有的网站多个域名复用一个ip，而当浏览器访问一个https站点时，会首先和服务器建立SSL连接，建立SSL连接的第一步时请求服务器证书。服务器在发送证书时，不知道浏览器请求的是哪个域名，所以不能根据不同域名发送不同的证书。这个时候SNI（Server Name Indication）就是为了解决这个问题的，它的工作原理是：在连接到服务器建立SSL连接之前，先发送要访问站点的域名，这样服务器就会根据这个域名返回一个合格证书。</p>
+<p>然饿，悲剧是有很多啊，其中一个就是python2不支持SNI，所以在<code>request.get(url)</code>的时候，就报了上面那个错：<code>requests.exceptions.SSLError: HTTPSConnectionPool</code>。</p>
+<h4 id="二、修改方法"><a href="#二、修改方法" class="headerlink" title="二、修改方法"></a>二、修改方法</h4><p>我亲测有效的修改方法有两种：</p>
+<p><code>第一种</code>是取消对证书的验证，这个很简单啊，就是在request.get的参数中加一个verfy=False，也就是：<br><code>｀python
+requests.get(url,verify=False)
+｀</code><br><code>第二种</code>是想办法让python2支持SNI功能啊，需要pip安装以下依赖，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install ndg-httpsclient</span><br><span class="line">pip install pyasn1</span><br></pre></td></tr></table></figure></p>
+<p>然后在使用requests之前注入以下代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib3.contrib.pyopenssl</span><br><span class="line">urllib3.contrib.pyopenssl.inject_into_urllib3()</span><br></pre></td></tr></table></figure>
+<p>被安排的明明白白啊。</p>
+
+	
+	</div>
+  <a type="button" href="/2018/07/02/python2.7不支持SNI引发的问题/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2018/06/21/我理解的PPP-有限状态机和STATE模式/" title="有限状态机是现实生活中很多模型的抽象，能利用好有限状态机模型能将很多复杂的逻辑清晰的表述出来">我理解的PPP-有限状态机和STATE模式</a>
 		</h3>
 		</div>
@@ -447,58 +484,6 @@ var _hmt = _hmt || [];
 </div>
 
 		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2018/05/22/关于数据报表时效性问题的思考/" title="最近工作上的一些体会，一家之言">关于数据报表时效性问题的思考</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2018-05-22  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<p>考虑一个数据报表需求，需要在业务端给客户呈现一个数据报表，里面有诸如点击、咨询等不同维度的平铺数据或者漏斗数据，系统无外乎要有以下几个模块：</p>
-<p>1、数据收集模块</p>
-<p>2、消息队列削峰</p>
-<p>3、数据处理模块</p>
-<p>4、数据报表库（可能是OLAP，也可能是OLTP）</p>
-<p>5、数据报告模块</p>
-<p>数据收集模块，就是收集用户的行为日志，将其落入磁盘，这里尽量保证高性能，不会丢失用户的数据记录。</p>
-<p>消息队列，起到了削平峰值的作用，可能数据处理的速度比不上数据收集的速度，那么就会丢失数据，如果有消息队列在中间将峰值削平，就可以保证数据不丢，使数据处理模块按平缓的速度进行处理。</p>
-<p>数据处理模块要从消息队列中取数据清洗入库，这里尽可能让清洗逻辑简单快速，数据库入库尽量能batch insert，保证合适的吞吐量。</p>
-<p>数据报告模块，就是从各分时库中join数据进行展示的模块。</p>
-<p>这么看没什么问题，但是往往现实是残酷的，比如这个系统可能是分成多个子系统的，子系统的数据库又是独立的，甚至子系统的负责团队都是不同的，那么其中一个子系统提供的接口不可能面面俱到包含数据报告希望涵盖的字段（一个是很难做到，另一个是处理数据报告外其他地方根本用不到这个字段）。</p>
-<p>但是数据报告又是以用户为维度的，所以客户的id是一个必填非空列，但是客户数据是存在子系统A中，在对接前端的另一个子系统B里只有用户id（注意用户id和客户id不是一个id），这个时候矛盾就来了，B子系统根本不关心客户id是多少，因为这跟前端展示没有任何关系，吵架由此发生。</p>
-<p>B：我这边根本没存这个客户id，如果每次都要通过接口去获取你这个客户id，那么就会多一词接口调用的网络成本，而且在列表接口，如果每一个item都去请求一次该item层层推倒上去的客户id，就不是一个接口的性能问题了。</p>
-<p>A：报表不仅仅是我们的需求，不是说我们想做报表，而是产品是每个团队共同的，我们要为整个产品去考虑，id我们可以给你提供接口获取，但是这个是必传字段。</p>
-<p>B：这无非就是一个性能的问题嘛，就是看我们这边性能损失和你们那边性能损失谁更大嘛，我们是展示给用户的产品，一点微小的延迟可能造成极不好的体验，你们那边可以在出报表的时候直接join通过关联关系取到客户id，报表慢一点我觉得可以接受。</p>
-<p>A：这不是一个慢的问题，而是数据记录的是当时的状态，我事后去查反应的是现在的状态，这个无法进行对接，如果中间某条数据的变更我是无法得知的。</p>
-<p>B：……</p>
-<p>A：……</p>
-<p>为了保证数据的时效性，是不能在后续的清洗操作或者出报表操作的时候再去join，因为此时的数据已经不是当时的分片，就算中间时间再短，也无法保证当时的数据完整性了。</p>
-<p>解决方案有这么几种：</p>
-<p>1、逐一获取每条追溯的id，效率低</p>
-<p>2、将列表页的数据延迟到详情页再发送，这样就可以在详情中做一些操作</p>
-<p>3、将B系统的数据库做冗余，冗余需要的列</p>
-<p>4、将A，B数据库都通过数据流导入一个高可用数据数据库集群，所有列表的读操作都通过这个数据库来join，直接获得信息，无需接口传递网络开销</p>
-<p>杂七杂八写了一堆，无非就是工作上的一些心得体会，给踩了的坑做个记录，还有今天看到极客时间出了一个关于游戏开发的专栏，非常感兴趣，毕竟我最崇拜的云风就是搞游戏的，哈哈。</p>
-
-	
-	</div>
-  <a type="button" href="/2018/05/22/关于数据报表时效性问题的思考/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
 
 		</div>
 
@@ -563,7 +548,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/瞎搞/">瞎搞<span>3</span></a></li>
 		
-			<li><a href="/categories/解bug之路/">解bug之路<span>1</span></a></li>
+			<li><a href="/categories/解bug之路/">解bug之路<span>2</span></a></li>
 		
 		</ul>
 	</div>
@@ -576,6 +561,10 @@ var _hmt = _hmt || [];
 <div class="widget">
   <h4>Recent Posts</h4>
   <ul class="entry list-unstyled">
+    
+      <li>
+        <a href="/2018/07/02/python2.7不支持SNI引发的问题/" ><i class="fa fa-file-o"></i>python2.7不支持SNI引发的问题</a>
+      </li>
     
       <li>
         <a href="/2018/06/21/我理解的PPP-有限状态机和STATE模式/"  title="有限状态机是现实生活中很多模型的抽象，能利用好有限状态机模型能将很多复杂的逻辑清晰的表述出来" ><i class="fa fa-file-o"></i>我理解的PPP-有限状态机和STATE模式</a>
@@ -591,10 +580,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/06/10/我理解的PPP-NULL OBJECT模式/" ><i class="fa fa-file-o"></i>我理解的PPP-NULL OBJECT模式</a>
-      </li>
-    
-      <li>
-        <a href="/2018/06/07/ThreadLocal中的Lambda表达式/" ><i class="fa fa-file-o"></i>ThreadLocal中的Lamdba表达式</a>
       </li>
     
   </ul>

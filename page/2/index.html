@@ -122,6 +122,58 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2018/05/22/关于数据报表时效性问题的思考/" title="最近工作上的一些体会，一家之言">关于数据报表时效性问题的思考</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2018-05-22  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<p>考虑一个数据报表需求，需要在业务端给客户呈现一个数据报表，里面有诸如点击、咨询等不同维度的平铺数据或者漏斗数据，系统无外乎要有以下几个模块：</p>
+<p>1、数据收集模块</p>
+<p>2、消息队列削峰</p>
+<p>3、数据处理模块</p>
+<p>4、数据报表库（可能是OLAP，也可能是OLTP）</p>
+<p>5、数据报告模块</p>
+<p>数据收集模块，就是收集用户的行为日志，将其落入磁盘，这里尽量保证高性能，不会丢失用户的数据记录。</p>
+<p>消息队列，起到了削平峰值的作用，可能数据处理的速度比不上数据收集的速度，那么就会丢失数据，如果有消息队列在中间将峰值削平，就可以保证数据不丢，使数据处理模块按平缓的速度进行处理。</p>
+<p>数据处理模块要从消息队列中取数据清洗入库，这里尽可能让清洗逻辑简单快速，数据库入库尽量能batch insert，保证合适的吞吐量。</p>
+<p>数据报告模块，就是从各分时库中join数据进行展示的模块。</p>
+<p>这么看没什么问题，但是往往现实是残酷的，比如这个系统可能是分成多个子系统的，子系统的数据库又是独立的，甚至子系统的负责团队都是不同的，那么其中一个子系统提供的接口不可能面面俱到包含数据报告希望涵盖的字段（一个是很难做到，另一个是处理数据报告外其他地方根本用不到这个字段）。</p>
+<p>但是数据报告又是以用户为维度的，所以客户的id是一个必填非空列，但是客户数据是存在子系统A中，在对接前端的另一个子系统B里只有用户id（注意用户id和客户id不是一个id），这个时候矛盾就来了，B子系统根本不关心客户id是多少，因为这跟前端展示没有任何关系，吵架由此发生。</p>
+<p>B：我这边根本没存这个客户id，如果每次都要通过接口去获取你这个客户id，那么就会多一词接口调用的网络成本，而且在列表接口，如果每一个item都去请求一次该item层层推倒上去的客户id，就不是一个接口的性能问题了。</p>
+<p>A：报表不仅仅是我们的需求，不是说我们想做报表，而是产品是每个团队共同的，我们要为整个产品去考虑，id我们可以给你提供接口获取，但是这个是必传字段。</p>
+<p>B：这无非就是一个性能的问题嘛，就是看我们这边性能损失和你们那边性能损失谁更大嘛，我们是展示给用户的产品，一点微小的延迟可能造成极不好的体验，你们那边可以在出报表的时候直接join通过关联关系取到客户id，报表慢一点我觉得可以接受。</p>
+<p>A：这不是一个慢的问题，而是数据记录的是当时的状态，我事后去查反应的是现在的状态，这个无法进行对接，如果中间某条数据的变更我是无法得知的。</p>
+<p>B：……</p>
+<p>A：……</p>
+<p>为了保证数据的时效性，是不能在后续的清洗操作或者出报表操作的时候再去join，因为此时的数据已经不是当时的分片，就算中间时间再短，也无法保证当时的数据完整性了。</p>
+<p>解决方案有这么几种：</p>
+<p>1、逐一获取每条追溯的id，效率低</p>
+<p>2、将列表页的数据延迟到详情页再发送，这样就可以在详情中做一些操作</p>
+<p>3、将B系统的数据库做冗余，冗余需要的列</p>
+<p>4、将A，B数据库都通过数据流导入一个高可用数据数据库集群，所有列表的读操作都通过这个数据库来join，直接获得信息，无需接口传递网络开销</p>
+<p>杂七杂八写了一堆，无非就是工作上的一些心得体会，给踩了的坑做个记录，还有今天看到极客时间出了一个关于游戏开发的专栏，非常感兴趣，毕竟我最崇拜的云风就是搞游戏的，哈哈。</p>
+
+	
+	</div>
+  <a type="button" href="/2018/05/22/关于数据报表时效性问题的思考/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2018/05/20/我理解的PPP-ACTIVE OBJECT模式/" >我理解的PPP-ACTIVE_OBJECT模式</a>
 		</h3>
 		</div>
@@ -535,60 +587,6 @@ var _hmt = _hmt || [];
 </div>
 
 		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2017/10/04/虚拟机类加载机制/" title="去年遇到的ClassLoader问题时的困惑，实在是无法通过搜索引擎解决，无奈之下只有看jdk源码，最终不但解决了问题还使得我对这一块的知识点有了自己的深刻理解，这不是通过google就能获得到的财富，我视之为是我编程生涯的一个转折点，使我明白了通过阅读源码解决问题才是学习编程进步的根本。">虚拟机类加载机制</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2017-10-04  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<h6 id="一次重写ClassLoader开始讲起"><a href="#一次重写ClassLoader开始讲起" class="headerlink" title="一次重写ClassLoader开始讲起"></a>一次重写ClassLoader开始讲起</h6><p>在我完成Java在线编译器的过程中，碰到一个最大的坑就是ClassLoader的缓存机制，这个缓存机制导致了在一个类全限定名是相同的class文件，不会被重新加载，而是直接使用缓存已经加载好的字节流，导致在多次提交代码的时候，运行出来的都是第一次的结果，看了ClassLoader的源码以及阅读了IBM developerWorks的一篇文章<a href="https://www.ibm.com/developerworks/java/tutorials/j-classloader/j-classloader.html" target="_blank" rel="noopener">《Understanding the Java ClassLoader》</a>，通过重写ClassLoader的findClass(String name)函数，每次都重新从路径中加载读取新编译的class文件解决了这个问题，这次又看到周志明的《深入理解Java虚拟机》第7章虚拟机类加载机制，写一篇文章记录一下</p>
-<h6 id="类加载的时机"><a href="#类加载的时机" class="headerlink" title="类加载的时机"></a>类加载的时机</h6><p>类从被加载到虚拟机内存开始，到卸载出内存为止，它的整个生命周期包括：加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）和卸载（Unloading）7个阶段。其中验证、准备、解析3个部分统称为连接（Linking）。</p>
-<p>Java虚拟机规范规定了在有且仅有5种情况下必须对类进行“初始化”：</p>
-<ul>
-<li>遇到new、getstatic、putstatic或invokestatic这4条指令的时候，这4条是class文件中的指令，分别对应了使用new关键字初始化对象实例、读取或设置一个类的静态字段、以及调用一个类的静态方法的时候。</li>
-<li>使用java.lang.reflect包的方法对类进行反射调用的时候，如果类没有进行过初始化，则先触发初始化。</li>
-<li>当初始化一个类的时候，发现其父类还没有初始化，则先触发父类的初始化。</li>
-<li>当虚拟机启动时，用户需要指定一个主类（包含main()方法的那个类），虚拟机会先初始化这个类。</li>
-<li>当使用jdk1.7的动态语言支持时，如果一个java.lang.invoke.MethodHandle实例最后解析的结果REF_getStatic、REF_putStatic、REF_invokeStatic的方法句柄，并且这个方法句柄对应的类没有进行过初始化，则需要先触发其初始化。</li>
-</ul>
-<h6 id="类加载的准备阶段"><a href="#类加载的准备阶段" class="headerlink" title="类加载的准备阶段"></a>类加载的准备阶段</h6><p>准备阶段是正式为类变量分配内存并设置类变量初始值的过程，这些变量所使用的内存都在方法区中进行分配。这个时候只会分配类变量（被static修饰的变量），而不包括实例变量，而且这里所说的初始值一般情况是数据的零值，假设一个类变量定义为<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">123</span>;</span><br></pre></td></tr></table></figure></p>
-<p>那变量value在准备阶段过后的初始值是0，而不是123，因为这时候尚未执行任何java方法，而把value赋值为123的putstatic指令是程序被编译后，存放于类构造器<code>&lt;clinit&gt;()</code>方法之中，所以把value赋值为123的动作将在初始化阶段才会执行。<br>但如果上面类变量value的定义变为：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> value = <span class="number">123</span>;</span><br></pre></td></tr></table></figure></p>
-<p>则编译时javac会将value生成ConstantValue属性，再准备阶段虚拟机就会根据ConstantValue的设置将value赋值为123。</p>
-<h6 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h6><p>类初始化阶段是类加载过程的最后一步，在准备阶段，变量已经赋过一次系统要求的初始值，而在初始化阶段，则根据程序员通过程序制定的主观计划去初始化类变量和其他资源。<br>初始化阶段是执行类构造器<code>&lt;clinit&gt;()</code>方法的过程。</p>
-<ul>
-<li><code>&lt;clinit&gt;()</code>方法是编译器自动收集类中所有变量的赋值动作和静态代码块中的语句合并产生的，编译器收集的顺序是有语句在源文件中出现的顺序决定的。</li>
-<li><code>&lt;clinit&gt;()</code>方法与类的构造函数不同，它不需要显式地调用父类构造器，虚拟机会保证在子类的<code>&lt;clinit&gt;()</code>方法执行前，父类的<code>&lt;clinit&gt;()</code>方法已经执行完毕，所以虚拟机中第一个被执行的<code>&lt;clinit&gt;()</code>方法的类肯定是java.lang.Object。</li>
-<li><code>&lt;clinit&gt;()</code>对类和接口不是必须的，如果一个类中没有静态语句块，编译器可以不为这个类生成<code>&lt;clinit&gt;()</code>方法。</li>
-</ul>
-<h6 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h6><p>从Java虚拟机的角度看，只存在两种类加载器：一种是启动类加载器（Bootstrap ClassLoader），这个类加载器由C++实现，是虚拟机自身一部分；另一种就是其他类加载其，这些都是由Java实现，独立于虚拟机外部，并且全都继承自抽象类java.lang.ClassLoader。</p>
-<ul>
-<li>启动类加载器（Bootstrap ClassLoader）：这个类负责将存放在&lt;JAVA_HOME&gt;/lib目录中的，或者被-XbootClasspath参数指定的路径中的，并且死后虚拟机识别的（按文件名识别）类加载到虚拟机内存中。</li>
-<li>扩展类加载器（Extension ClassLoader）：这个类加载器由sun.misc.Launcher$ExtClassLoader实现，它负责加载&lt;JAVA_HOME&gt;/lib/ext目录中的，或者被java.ext.dirs系统变量所指定的路径中的所有类库。</li>
-<li>应用程序类加载器（Application ClassLoader）：这个类加载器由sun.misc.Launcher$AppClassLoader实现。由于这个类加载器是ClassLoader中的getSystemClassLoader()方法的返回值，所以一般也称之为系统类加载器，它负责加载用户类路径（ClassPath）上所指定的类库。</li>
-</ul>
-<p>这些类加载器之间的关系称之为双亲委派模型，即要求除了顶层的启动类加载器外，其他类加载器都要有父加载器（注意这里的父加载器不是由继承Inheritance来实现的，而是通过组合Composition来实现的）。<br>双亲委派模型的工作过程是：如果一个类加载器收到了加载类的请求，它首先不会自己去尝试加载这个类，而是把这个类委派给父类加载器去完成，每一个层次的类加载器都是如此，因此所有类加载请求最终都会被传送到顶层启动类加载器中，只有当父类加载器反馈自己无法完成这个加载请求后，子类加载器才会尝试自己加载。核心代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">        <span class="comment">// First, check if the class has already been loaded</span></span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">  	        <span class="keyword">long</span> t0 = System.nanoTime();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    c = parent.loadClass(name, <span class="keyword">false</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    c = findBootstrapClassOrNull(name);</span><br><span class="line">            	&#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            	<span class="comment">// ClassNotFoundException thrown if class not found</span></span><br><span class="line">               	<span class="comment">// from the non-null parent class loader</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// If still not found, then invoke findClass in order</span></span><br><span class="line">                <span class="comment">// to find the class.</span></span><br><span class="line">                <span class="keyword">long</span> t1 = System.nanoTime();</span><br><span class="line">                c = findClass(name);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// this is the defining class loader; record the stats</span></span><br><span class="line">                sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);</span><br><span class="line">                sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);</span><br><span class="line">                sun.misc.PerfCounter.getFindClasses().increment();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">            resolveClass(c);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>使用双亲委派模型一个显而易见的好处是Java类随着它的类加载器一期具备了一种带有优先级的层次关系。例如java.lang.Object，它存放在rt.jar中，无论哪个类加载器要加载这个类，最终都是委派给Bootstrap ClassLoader去完成，因此Object类在程序中的各种类加载环境下都是同一个类。</p>
-
-	
-	</div>
-  <a type="button" href="/2017/10/04/虚拟机类加载机制/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
 
 		</div>
 
@@ -653,7 +651,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/瞎搞/">瞎搞<span>3</span></a></li>
 		
-			<li><a href="/categories/解bug之路/">解bug之路<span>1</span></a></li>
+			<li><a href="/categories/解bug之路/">解bug之路<span>2</span></a></li>
 		
 		</ul>
 	</div>
@@ -666,6 +664,10 @@ var _hmt = _hmt || [];
 <div class="widget">
   <h4>Recent Posts</h4>
   <ul class="entry list-unstyled">
+    
+      <li>
+        <a href="/2018/07/02/python2.7不支持SNI引发的问题/" ><i class="fa fa-file-o"></i>python2.7不支持SNI引发的问题</a>
+      </li>
     
       <li>
         <a href="/2018/06/21/我理解的PPP-有限状态机和STATE模式/"  title="有限状态机是现实生活中很多模型的抽象，能利用好有限状态机模型能将很多复杂的逻辑清晰的表述出来" ><i class="fa fa-file-o"></i>我理解的PPP-有限状态机和STATE模式</a>
@@ -681,10 +683,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/06/10/我理解的PPP-NULL OBJECT模式/" ><i class="fa fa-file-o"></i>我理解的PPP-NULL OBJECT模式</a>
-      </li>
-    
-      <li>
-        <a href="/2018/06/07/ThreadLocal中的Lambda表达式/" ><i class="fa fa-file-o"></i>ThreadLocal中的Lamdba表达式</a>
       </li>
     
   </ul>
