@@ -122,6 +122,38 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2018/05/24/我理解的PPP-TEMPLATE模式/" title="TEMPLATE模式使用继承解决问题，而STRATEGY模式使用的则是委托">我理解的PPP-TEMPLATE模式</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2018-05-24  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<h6 id="Template模式介绍"><a href="#Template模式介绍" class="headerlink" title="Template模式介绍"></a>Template模式介绍</h6><p>Template是模版模式，其核心是定义了一个（final可选）的模版方法，这个方法中需要调用到的一系列函数作为抽象函数供子类实现，子类继承了这个模版类之后，只需要重写这些抽象函数而不必关心模版方法的具体实现，就能完成某个算法或功能。</p>
+<p>举一个具体的例子，我们要实现一个冒泡排序算法，可以先实现它的模版：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">BubbleSorter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">int</span> length = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doSort</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (length &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> nextToLast = length - <span class="number">2</span>; nextToLast &gt;= <span class="number">0</span>; nextToLast-- ) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> index = <span class="number">0</span>; index &lt;= nextToLast; index++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (outOfOrder(index)) &#123;</span><br><span class="line">                    swap(index);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">boolean</span> <span class="title">outOfOrder</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>有了BubbleSorter模版类，就可以通过继承它去实现各种不同类型的对象的排序算法了，只需要实现其它的比较函数outOfOrder(index)和交换函数swap(index)，如下的IntBubbleSorter：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IntBubbleSorter</span> <span class="keyword">extends</span> <span class="title">BubbleSorter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] array = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sort</span><span class="params">(<span class="keyword">int</span>[] theArray)</span> </span>&#123;</span><br><span class="line">        array = theArray;</span><br><span class="line">        length = array.length;</span><br><span class="line">        doSort();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> temp = array[index];</span><br><span class="line">        array[index] = array[index+<span class="number">1</span>];</span><br><span class="line">        array[index+<span class="number">1</span>] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">outOfOrder</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> array[index] &gt; array[index+<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这种把通用算法放在模版类中，并通过继承来在不同的场景中实现该通用算法，但是代价也很高，继承是一种非常强的关系，派生类不可避免地要和他们的基类绑定在一起，代码看起来也费劲。</p>
+<h6 id="jdk中的Template模式"><a href="#jdk中的Template模式" class="headerlink" title="jdk中的Template模式"></a>jdk中的Template模式</h6><p>AbstractList中的indexOf(Object o)就是一个模版方法，调用了listIterator()方法获得迭代器，而这个listIterator()方法就是延迟到子类中去实现的，如ArrayList、Vector等。</p>
+
+	
+	</div>
+  <a type="button" href="/2018/05/24/我理解的PPP-TEMPLATE模式/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2018/05/22/关于数据报表时效性问题的思考/" title="最近工作上的一些体会，一家之言">关于数据报表时效性问题的思考</a>
 		</h3>
 		</div>
@@ -506,87 +538,6 @@ var _hmt = _hmt || [];
 </div>
 
 		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2018/01/13/Spring AOP三种实现方式的多纬度差异/" >Spring AOP三种实现方式的多维度差异</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2018-01-13  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<p>记得有一次面试，面试官问我：<strong>spring aop是如何实现的，三种实现方式的多维度差异是什么，aop解决了什么问题？</strong></p>
-<p><strong>spring aop是如何实现的</strong>，这个拍拍脑门也知道使用了动态代理，我就大概说了下jdk动态代理和CGlib动态代理。</p>
-<p><strong>aop解决了什么问题</strong>，大致就是一些通用操作如果一个一个写在业务类中，麻烦不说还容易漏掉，将来改动起来也十分麻烦，所以需要一个统一的<strong>切面（aspect）</strong>去实现这个操作，然后<strong>织入（weaving）</strong>到需要的类中，将来有改动的时候只需要改切面代码就把所有地方都统一改了。</p>
-<p>但是第二个问题给我问懵比了，<strong>三种实现方式的多维度差异？</strong>我在平时只使用过spring+aspectJ的方式，通过@Aspect注解定义一个切面类，然后用@Around注解在方法上定义一个切点表达式，使用ProceedingJoinPoint对象就能拿到需要方法的任何信息，如方法名，参数等，还可以执行这个方法。</p>
-<p>偶然翻到一本书，《架构探险 从零开始写javaweb框架》，这本书中第四章详细阐述了spring aop的前世今生，貌似回答了这个问题，下面记录一下:</p>
-<p>想要在代码中实现aop，大致有以下三种思路：</p>
-<h4 id="1、自己手写动态代理"><a href="#1、自己手写动态代理" class="headerlink" title="1、自己手写动态代理"></a>1、自己手写动态代理</h4><p>自己手写动态代理也是可以实现aop的，有jdk动态代理去代理接口，获取使用CGlib去代理类，写起来代码也是一坨一坨的，后面也不太好维护。</p>
-<h4 id="2、Spring-AOP"><a href="#2、Spring-AOP" class="headerlink" title="2、Spring AOP"></a>2、Spring AOP</h4><p>Spring AOP自身提供的aop能力分为<strong>编程式</strong>和<strong>声明式</strong>两种。</p>
-<p>编程式的是基于AOP接口（Advice），如AfterReturingAdvice，并实现其中的afterReturning方法，最后在代码中通过ProxyFactory将要代理的目标对象和刚才实现的增强一起生成一个proxy代理，但是这种编程式的方法太弱了，基本没办法用，所以又有了声明式的使用方式。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建代理工厂</span></span><br><span class="line">ProxyFactory proxyFactory = <span class="keyword">new</span> ProxyFactory();</span><br><span class="line"><span class="comment">// 射入目标类对象</span></span><br><span class="line">proxyFactory.setTarget(<span class="keyword">new</span> GreetingImpl);</span><br><span class="line"><span class="comment">// 添加前置增强</span></span><br><span class="line">proxyFactory.addAdvice(<span class="keyword">new</span> GreetingBeforeAdvice());</span><br><span class="line"><span class="comment">// 从代理工厂中获取代理</span></span><br><span class="line">Greeting greeting = (Greeting) proxyFactory.getProxy();</span><br></pre></td></tr></table></figure>
-<p>声明式是在xml中配置一个代理bean，class为org.springframework.aop.framework.ProxyFactoryBean，将要代理的接口，接口实现类，和增强类注入进去，这样就可以在代码中使用context.getBean(“**Proxy”)得到代理对象了。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=<span class="string">"greetingProxy"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"org.springframework.aop.framework.ProxyFactoryBean"</span>&gt;</span><br><span class="line">	&lt;property name=<span class="string">"interfaces"</span> value=<span class="string">"aop.Greeting"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"target"</span> ref=<span class="string">"greetingImpl"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"interceptorNames"</span> value=<span class="string">"greetingAroundAdvice"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
-<p>但这样的方式每次将一个类里面的所有方法全部代理了，有时候我们想精细化代理，这时候就要用到spring提供的切面类（Advisor）了，如定义一个正则表达式切面RegexpMethodPointcutAdvisor，为其注入增强类和正则表达式，然后将这个切面类注入到ProxyFactoryBean中，代码如下：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=<span class="string">"greetingAdvisor"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"org.springframework.aop.support.RegexpMethodPointcutAdvisor"</span>&gt;</span><br><span class="line">	&lt;property name=<span class="string">"advice"</span> ref=<span class="string">"greetingAroundAdvice"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"pattern"</span> value=<span class="string">"aop.demon.GreetingImpl.good.*"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">&lt;bean id=<span class="string">"greetingProxy"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"org.springframework.aop.framework.ProxyFactoryBean"</span>&gt;</span><br><span class="line">	&lt;property name=<span class="string">"target"</span> ref=<span class="string">"greetingImpl"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"interceptorNames"</span> value=<span class="string">"greetingAdvisor"</span>/&gt;</span><br><span class="line">	&lt;property name=<span class="string">"proxyTargetClass"</span> value=<span class="string">"true"</span>/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
-<p>这两种解决方案都不是很理想，除了要定义大量的切面类，还有比较复杂的xml配置，正因为如此，spring最后选择了集成aspectj这个最经典的java aop框架。</p>
-<h4 id="3、Spring-AspectJ"><a href="#3、Spring-AspectJ" class="headerlink" title="3、Spring+AspectJ"></a>3、Spring+AspectJ</h4><p>Spring集成了AspectJ，同时也保留了上面提到的切面与代理配置方式。将Spring和AspectJ集成与直接使用AspectJ是不同的。</p>
-<p>直接使用AspectJ是需要定义aspectj类的（它扩展了java语法，需要用到特殊的编译器ajc），但Spring中只使用了aspectJ的注解和切点表达式（比正则表达式更易懂），举个例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GreetingAspect</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Around</span>(<span class="string">"exection(* aop.demo.GreetingImpl.*(..))"</span>)</span><br><span class="line">	<span class="function"><span class="keyword">public</span> Object <span class="title">around</span><span class="params">(ProceedingJoinPoint pjp)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">		before();</span><br><span class="line">		Object result = pjp.proceed();</span><br><span class="line">		after();</span><br><span class="line">		<span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><table>
-<thead>
-<tr>
-<th>增强类型</th>
-<th>基于AOP接口</th>
-<th>基于AOP注解</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Before Advice（前置增强）</td>
-<td>MethodBeforeAdvice</td>
-<td>@Before</td>
-</tr>
-<tr>
-<td>After Advice（后置增强）</td>
-<td>AfterReturningAdvice</td>
-<td>@After</td>
-</tr>
-<tr>
-<td>Around Advice（环绕增强）</td>
-<td>MethodInterceptor</td>
-<td>@Around</td>
-</tr>
-<tr>
-<td>Throws Advice（抛出增强）</td>
-<td>ThrowsAdvice</td>
-<td>@AfterThrowing</td>
-</tr>
-<tr>
-<td>Introduction Advice（引入增强）</td>
-<td>DelegatingIntroductionInterceptor</td>
-<td>@DeclareParents</td>
-</tr>
-</tbody>
-</table>
-
-	
-	</div>
-  <a type="button" href="/2018/01/13/Spring AOP三种实现方式的多纬度差异/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
 
 		</div>
 
@@ -641,7 +592,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/OpenResty/">OpenResty<span>2</span></a></li>
 		
-			<li><a href="/categories/PPP/">PPP<span>7</span></a></li>
+			<li><a href="/categories/PPP/">PPP<span>8</span></a></li>
 		
 			<li><a href="/categories/jvm/">jvm<span>5</span></a></li>
 		
@@ -666,6 +617,10 @@ var _hmt = _hmt || [];
   <ul class="entry list-unstyled">
     
       <li>
+        <a href="/2018/07/15/我理解的PPP-VISITOR模式和双重分发/"  title="需要向类层次结构中增加新的方法，但是增加起来会很费劲或者会破坏设计。" ><i class="fa fa-file-o"></i>我理解的PPP-VISITOR模式和双重分发</a>
+      </li>
+    
+      <li>
         <a href="/2018/07/02/python2.7不支持SNI引发的问题/" ><i class="fa fa-file-o"></i>python2.7不支持SNI引发的问题</a>
       </li>
     
@@ -679,10 +634,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/06/12/非常生动的一张描述JOIN的图/"  title="一个统计需求，join了七张表，一会inner，一会left，幸好有这张神图" ><i class="fa fa-file-o"></i>非常生动的一张描述JOIN的图</a>
-      </li>
-    
-      <li>
-        <a href="/2018/06/10/我理解的PPP-NULL OBJECT模式/" ><i class="fa fa-file-o"></i>我理解的PPP-NULL OBJECT模式</a>
       </li>
     
   </ul>

@@ -122,6 +122,43 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2018/07/15/我理解的PPP-VISITOR模式和双重分发/" title="需要向类层次结构中增加新的方法，但是增加起来会很费劲或者会破坏设计。">我理解的PPP-VISITOR模式和双重分发</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2018-07-15  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<p>假如有一个Modem对象的层次结构，基类中具有对于所有调制解调器来说公用的方法。不同的派生类代表针对不同调制解调器厂商和类型的驱动程序。如果这时候要向层次结构中加一个新方法，比如适配unix，这个方法在不同的调制解调器中有自己的实现，那么后面如果又要适配windows该怎么办呢？</p>
+<p>VISITOR模式的作用就是允许在不更改现有类层次结构的情况下向其中增加新方法。</p>
+<p>如下代码很清晰的展示了Visitor模式和双重分发：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Modem</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">dial</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">hangup</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">send</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">char</span> <span class="title">recv</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">accept</span><span class="params">(ModemVisitor v)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ModemVisitor</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">visit</span><span class="params">(HayesModem modem)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">visit</span><span class="params">(ZoomModem modem)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HayesModem</span> <span class="keyword">implements</span> <span class="title">Modem</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dial</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hangup</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">send</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">char</span> <span class="title">recv</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> <span class="number">0</span>;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">accept</span><span class="params">(ModemVisitor v)</span> </span>&#123;v.visit(<span class="keyword">this</span>);&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZoomModem</span> <span class="keyword">implements</span> <span class="title">Modem</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dial</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hangup</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">send</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">char</span> <span class="title">recv</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> <span class="number">0</span>;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">accept</span><span class="params">(ModemVisitor v)</span> </span>&#123;v.visit(<span class="keyword">this</span>);&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UnixModemConfigurator</span> <span class="keyword">implements</span> <span class="title">ModemVisitor</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visit</span><span class="params">(HayesModem m)</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visit</span><span class="params">(ZoomModem m)</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Modem是调制解调器的基类，所有基础方法都定义在里面，HayesModem和ZoomModem是派生类，这时候需要调制Unix的机器，只需要派生一个UnixModemConfigurator实现MedemVisitor，分别处理多态的visit方法即可，如果要调制Windows，只需要派生WindowsModemConfigurator即可。</p>
+<p>这里之所以被称为双重分发是因为它涉及了两个多态分发。第一个分发是accept函数，该分发辨别了所调用的accept方法所属对象的类型。第二个是visit方法，它辨别出要执行的特定函数。</p>
+
+	
+	</div>
+  <a type="button" href="/2018/07/15/我理解的PPP-VISITOR模式和双重分发/#more" class="btn btn-default more">Read More</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2018/07/02/python2.7不支持SNI引发的问题/" >python2.7不支持SNI引发的问题</a>
 		</h3>
 		</div>
@@ -451,38 +488,6 @@ var _hmt = _hmt || [];
 </div>
 
 		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2018/05/24/我理解的PPP-TEMPLATE模式/" title="TEMPLATE模式使用继承解决问题，而STRATEGY模式使用的则是委托">我理解的PPP-TEMPLATE模式</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2018-05-24  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<h6 id="Template模式介绍"><a href="#Template模式介绍" class="headerlink" title="Template模式介绍"></a>Template模式介绍</h6><p>Template是模版模式，其核心是定义了一个（final可选）的模版方法，这个方法中需要调用到的一系列函数作为抽象函数供子类实现，子类继承了这个模版类之后，只需要重写这些抽象函数而不必关心模版方法的具体实现，就能完成某个算法或功能。</p>
-<p>举一个具体的例子，我们要实现一个冒泡排序算法，可以先实现它的模版：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">BubbleSorter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">int</span> length = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doSort</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (length &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> nextToLast = length - <span class="number">2</span>; nextToLast &gt;= <span class="number">0</span>; nextToLast-- ) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> index = <span class="number">0</span>; index &lt;= nextToLast; index++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (outOfOrder(index)) &#123;</span><br><span class="line">                    swap(index);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">boolean</span> <span class="title">outOfOrder</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>有了BubbleSorter模版类，就可以通过继承它去实现各种不同类型的对象的排序算法了，只需要实现其它的比较函数outOfOrder(index)和交换函数swap(index)，如下的IntBubbleSorter：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IntBubbleSorter</span> <span class="keyword">extends</span> <span class="title">BubbleSorter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] array = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sort</span><span class="params">(<span class="keyword">int</span>[] theArray)</span> </span>&#123;</span><br><span class="line">        array = theArray;</span><br><span class="line">        length = array.length;</span><br><span class="line">        doSort();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> temp = array[index];</span><br><span class="line">        array[index] = array[index+<span class="number">1</span>];</span><br><span class="line">        array[index+<span class="number">1</span>] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">outOfOrder</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> array[index] &gt; array[index+<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这种把通用算法放在模版类中，并通过继承来在不同的场景中实现该通用算法，但是代价也很高，继承是一种非常强的关系，派生类不可避免地要和他们的基类绑定在一起，代码看起来也费劲。</p>
-<h6 id="jdk中的Template模式"><a href="#jdk中的Template模式" class="headerlink" title="jdk中的Template模式"></a>jdk中的Template模式</h6><p>AbstractList中的indexOf(Object o)就是一个模版方法，调用了listIterator()方法获得迭代器，而这个listIterator()方法就是延迟到子类中去实现的，如ArrayList、Vector等。</p>
-
-	
-	</div>
-  <a type="button" href="/2018/05/24/我理解的PPP-TEMPLATE模式/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
 
 		</div>
 
@@ -537,7 +542,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/OpenResty/">OpenResty<span>2</span></a></li>
 		
-			<li><a href="/categories/PPP/">PPP<span>7</span></a></li>
+			<li><a href="/categories/PPP/">PPP<span>8</span></a></li>
 		
 			<li><a href="/categories/jvm/">jvm<span>5</span></a></li>
 		
@@ -562,6 +567,10 @@ var _hmt = _hmt || [];
   <ul class="entry list-unstyled">
     
       <li>
+        <a href="/2018/07/15/我理解的PPP-VISITOR模式和双重分发/"  title="需要向类层次结构中增加新的方法，但是增加起来会很费劲或者会破坏设计。" ><i class="fa fa-file-o"></i>我理解的PPP-VISITOR模式和双重分发</a>
+      </li>
+    
+      <li>
         <a href="/2018/07/02/python2.7不支持SNI引发的问题/" ><i class="fa fa-file-o"></i>python2.7不支持SNI引发的问题</a>
       </li>
     
@@ -575,10 +584,6 @@ var _hmt = _hmt || [];
     
       <li>
         <a href="/2018/06/12/非常生动的一张描述JOIN的图/"  title="一个统计需求，join了七张表，一会inner，一会left，幸好有这张神图" ><i class="fa fa-file-o"></i>非常生动的一张描述JOIN的图</a>
-      </li>
-    
-      <li>
-        <a href="/2018/06/10/我理解的PPP-NULL OBJECT模式/" ><i class="fa fa-file-o"></i>我理解的PPP-NULL OBJECT模式</a>
       </li>
     
   </ul>
